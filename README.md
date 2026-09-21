@@ -27,3 +27,10 @@ contract. Studio-only production metadata is stored separately in the library.
 The game can import `src/runtime/endless-loader.js`, call `loadEndless()` with
 the exported manifest, use `current()` for the first course, and call `next()`
 after each finish. The loader preserves playlist order and loops at the end.
+
+## Arcade racing layer
+
+The V2 generator uses an original arcade-racing layer suited to seated balance
+controls: carve-to-charge drift boosts, optional fast lines, energy chains,
+auto-used random supply gates, oil slicks, moving gates, ramps and shields.
+Auto-use keeps the interaction physical and does not add a handheld item button.

@@ -2,7 +2,7 @@ export const MAP_SCHEMA = 'neon-luge.map.v1';
 export const GENERATOR_VERSION = 2;
 export const ENVIRONMENTS = ['reef', 'alpine', 'neon-city', 'volcanic', 'aurora'];
 export const SHAPES = ['flowing', 'switchbacks', 'spiral', 'mixed'];
-export const FEATURE_TYPES = ['boost', 'slow', 'slow-wall', 'obstacle', 'jump'];
+export const FEATURE_TYPES = ['boost', 'slow', 'slow-wall', 'obstacle', 'jump', 'energy', 'item-box', 'oil', 'moving-gate'];
 
 export function canonical(value) {
   if (Array.isArray(value)) return value.map(canonical);

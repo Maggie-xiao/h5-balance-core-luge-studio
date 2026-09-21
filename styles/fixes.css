@@ -5,3 +5,25 @@
 [hidden] {
   display: none !important;
 }
+
+.race-status {
+  position: absolute;
+  top: 54px;
+  left: 24px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.race-status span,
+.race-status strong {
+  border: 1px solid #34444a;
+  background: rgba(15, 22, 25, 0.88);
+  padding: 6px 9px;
+  border-radius: 3px;
+  font-size: 11px;
+}
+
+.race-status strong {
+  color: #63db9b;
+}

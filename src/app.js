@@ -5,8 +5,8 @@ import { DEFAULT_TUNING, simulateStep } from './core/simulator.js';
 import { totalLength } from './core/schema.js';
 
 const $ = (id) => document.getElementById(id);
-const FEATURE_LABELS = { boost: '加速带', slow: '减速带', obstacle: '障碍', jump: '跳台', 'slow-wall': '摩擦墙' };
-const FEATURE_COLORS = { boost: '#63db9b', slow: '#f4b85c', obstacle: '#ef766f', jump: '#7ba7ff', 'slow-wall': '#d887ce' };
+const FEATURE_LABELS = { boost: '加速带', slow: '减速带', obstacle: '障碍', jump: '跳台', 'slow-wall': '摩擦墙', energy: '能量环', 'item-box': '随机补给', oil: '油膜', 'moving-gate': '横移门' };
+const FEATURE_COLORS = { boost: '#63db9b', slow: '#f4b85c', obstacle: '#ef766f', jump: '#7ba7ff', 'slow-wall': '#d887ce', energy: '#f5df62', 'item-box': '#65dff2', oil: '#8f75aa', 'moving-gate': '#ff8c72' };
 let library = loadLibrary();
 let playlist = loadPlaylist();
 let currentMap = library[0] ? structuredClone(library[0].map) : null;
@@ -27,12 +27,13 @@ function recipe() {
 
 for (const type of Object.keys(FEATURE_LABELS)) {
   const label = document.createElement('label'); label.textContent = FEATURE_LABELS[type];
-  label.innerHTML += `<input data-mechanism="${type}" type="number" min="0" max="10" value="${type === 'jump' || type === 'slow-wall' ? 1 : type === 'slow' ? 2 : 3}">`;
+  const defaults = { boost: 3, slow: 2, obstacle: 3, jump: 1, 'slow-wall': 1, energy: 4, 'item-box': 2, oil: 2, 'moving-gate': 1 };
+  label.innerHTML += `<input data-mechanism="${type}" type="number" min="0" max="10" value="${defaults[type]}">`;
   $('mechanism-inputs').append(label);
 }
 for (const [key, value] of Object.entries(DEFAULT_TUNING)) {
   const row = document.createElement('div'); row.className = 'tuning-row';
-  row.innerHTML = `<label><span>${({ baseSpeed:'基础速度',maxSpeed:'最高速度',acceleration:'后仰加速',brake:'前倾制动',steerGain:'转向增益',balanceAssist:'平衡辅助',hazardPenalty:'碰撞罚时' })[key]}</span><output>${value}</output></label><input data-tuning="${key}" type="range" min="${key === 'maxSpeed' ? 20 : key === 'baseSpeed' ? 10 : key === 'balanceAssist' ? 0 : .5}" max="${key === 'maxSpeed' ? 60 : key === 'baseSpeed' ? 35 : key === 'balanceAssist' ? 1 : 18}" step="${key === 'balanceAssist' ? .01 : .1}" value="${value}">`;
+  row.innerHTML = `<label><span>${({ baseSpeed:'基础速度',maxSpeed:'最高速度',acceleration:'后仰加速',brake:'前倾制动',steerGain:'转向增益',balanceAssist:'平衡辅助',hazardPenalty:'碰撞罚时',driftChargeRate:'漂移蓄能速度',driftBoost:'漂移加速强度' })[key]}</span><output>${value}</output></label><input data-tuning="${key}" type="range" min="${key === 'maxSpeed' ? 20 : key === 'baseSpeed' ? 10 : key === 'balanceAssist' ? 0 : .5}" max="${key === 'maxSpeed' ? 60 : key === 'baseSpeed' ? 35 : key === 'balanceAssist' ? 1 : 18}" step="${key === 'balanceAssist' ? .01 : .1}" value="${value}">`;
   $('tuning-inputs').append(row);
 }
 
@@ -133,7 +134,7 @@ $('save-revision').onclick=()=>{if(!currentMap)return;const qa=runQA(currentMap,
 function startDebug(){if(!currentMap){$('debug-message').hidden=false;return}$('debug-message').hidden=true;resetDebug();let last=performance.now();const loop=(now)=>{const dt=Math.min(.033,(now-last)/1000);last=now;const input={steer:(keys.has('ArrowRight')?1:0)-(keys.has('ArrowLeft')?1:0),lean:(keys.has('ArrowUp')?1:0)-(keys.has('ArrowDown')?1:0)};simulateStep(debugState,input,currentMap,tuning,dt);renderDebug(input);if(debugState.distance>=totalLength(currentMap))resetDebug();debugFrame=requestAnimationFrame(loop)};debugFrame=requestAnimationFrame(loop)}
 function stopDebug(){cancelAnimationFrame(debugFrame)}
 function resetDebug(){debugState={speed:tuning.baseSpeed,lateral:0,distance:0,elapsed:0,penalties:0,hit:new Set()}}
-function renderDebug(input){const canvas=$('debug-canvas'),ctx=canvas.getContext('2d'),rect=canvas.getBoundingClientRect(),ratio=Math.min(devicePixelRatio,2);canvas.width=rect.width*ratio;canvas.height=rect.height*ratio;ctx.scale(ratio,ratio);const w=rect.width,h=rect.height;ctx.fillStyle='#091012';ctx.fillRect(0,0,w,h);const center=w/2-debugState.lateral*w*.14;for(let y=-80;y<h+120;y+=90){const perspective=(y+120)/(h+200);ctx.strokeStyle='#1e3439';ctx.lineWidth=2+perspective*8;ctx.beginPath();ctx.moveTo(center-w*(.08+perspective*.32),y);ctx.lineTo(center+w*(.08+perspective*.32),y);ctx.stroke()}ctx.fillStyle='#63db9b';ctx.fillRect(w/2-16,h*.72,32,50);ctx.fillStyle='#dff8ea';ctx.fillRect(w/2-5,h*.72+6,10,18);$('debug-speed').textContent=`${Math.round(debugState.speed*3.6)} km/h`;$('debug-distance').textContent=`${Math.round(debugState.distance)} / ${Math.round(totalLength(currentMap))} m`;$('debug-time').textContent=`${debugState.elapsed.toFixed(1)} s +${debugState.penalties.toFixed(1)}`;$('balance-dot').style.left=`${50+debugState.lateral*38}%`}
+function renderDebug(input){const canvas=$('debug-canvas'),ctx=canvas.getContext('2d'),rect=canvas.getBoundingClientRect(),ratio=Math.min(devicePixelRatio,2);canvas.width=rect.width*ratio;canvas.height=rect.height*ratio;ctx.scale(ratio,ratio);const w=rect.width,h=rect.height;ctx.fillStyle='#091012';ctx.fillRect(0,0,w,h);const center=w/2-debugState.lateral*w*.14;for(let y=-80;y<h+120;y+=90){const perspective=(y+120)/(h+200);ctx.strokeStyle='#1e3439';ctx.lineWidth=2+perspective*8;ctx.beginPath();ctx.moveTo(center-w*(.08+perspective*.32),y);ctx.lineTo(center+w*(.08+perspective*.32),y);ctx.stroke()}ctx.fillStyle=debugState.boostTimer>0?'#f5df62':'#63db9b';ctx.fillRect(w/2-16,h*.72,32,50);ctx.fillStyle='#dff8ea';ctx.fillRect(w/2-5,h*.72+6,10,18);$('debug-speed').textContent=`${Math.round(debugState.speed*3.6)} km/h`;$('debug-distance').textContent=`${Math.round(debugState.distance)} / ${Math.round(totalLength(currentMap))} m`;$('debug-time').textContent=`${debugState.elapsed.toFixed(1)} s +${debugState.penalties.toFixed(1)}`;$('debug-drift').textContent=`漂移 ${Math.round(debugState.driftCharge*100)}%`;$('debug-energy').textContent=`能量 ${debugState.energy}/10${debugState.combo>1?` · 连击 ×${debugState.combo}`:''}`;$('debug-event').textContent=debugState.event||'稳定滑行';$('balance-dot').style.left=`${50+debugState.lateral*38}%`}
 window.addEventListener('keydown',(e)=>{if(e.key.startsWith('Arrow')){e.preventDefault();keys.add(e.key)}});window.addEventListener('keyup',(e)=>keys.delete(e.key));
 document.querySelectorAll('[data-tuning]').forEach((input)=>input.addEventListener('input',()=>{tuning[input.dataset.tuning]=Number(input.value);input.parentElement.querySelector('output').textContent=input.value;if(currentMap)renderCurrent()}));$('debug-reset').onclick=resetDebug;
 

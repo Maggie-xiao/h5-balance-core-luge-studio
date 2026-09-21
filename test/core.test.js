@@ -4,6 +4,7 @@ import { generateBatch, generateMap } from '../src/core/generator.js';
 import { autoTune, runQA } from '../src/core/qa.js';
 import { endlessManifest } from '../src/core/store.js';
 import { EndlessLoader } from '../src/runtime/endless-loader.js';
+import { simulateStep } from '../src/core/simulator.js';
 
 test('generation is deterministic', () => assert.deepEqual(generateMap({ seed: 88 }), generateMap({ seed: 88 })));
 test('batch seeds and maps are unique', () => {
@@ -35,4 +36,22 @@ test('endless loader advances in order and loops', () => {
   assert.equal(loader.current().map.seed, 1);
   assert.equal(loader.next().map.seed, 2);
   assert.equal(loader.next().map.seed, 1);
+});
+test('drift charge converts into a boost when the rider releases', () => {
+  const map = generateMap({ seed: 77 });
+  map.segments[1].yaw = 30;
+  const state = { speed: 20, lateral: 0, distance: map.segments[0].len + 1, elapsed: 0, penalties: 0, hit: new Set() };
+  for (let index = 0; index < 40; index++) simulateStep(state, { steer: 1, lean: 0 }, map, {}, .025);
+  assert.ok(state.driftCharge > .35);
+  simulateStep(state, { steer: 0, lean: 0 }, map, {}, .025);
+  assert.ok(state.boostTimer > 0);
+});
+
+test('item boxes auto-use a balance-board friendly reward', () => {
+  const map = generateMap({ seed: 9 });
+  const segment = map.segments[1];
+  map.features = [{ id: 'box', type: 'item-box', segmentId: segment.id, offset: 40, theta: 0, width: .6, length: 3 }];
+  const state = { speed: 20, lateral: 0, distance: map.segments[0].len + 40, elapsed: 0, penalties: 0, hit: new Set() };
+  simulateStep(state, { steer: 0, lean: 0 }, map, {}, .016);
+  assert.ok(['turbo', 'shield', 'magnet'].includes(state.item));
 });

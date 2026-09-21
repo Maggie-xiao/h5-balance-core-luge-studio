@@ -18,7 +18,7 @@ function chooseTurn(rng, shape, heading, difficulty) {
 export function estimateDuration(map, tuning = {}) {
   const speed = Number(tuning.baseSpeed || BASE_SPEED);
   const difficultyDrag = 1 + map.recipe.difficulty * .045;
-  const mechanismDrag = map.features.reduce((sum, feature) => sum + ({ boost: -.7, slow: 1.1, 'slow-wall': .7, obstacle: .8, jump: .45 }[feature.type] || 0), 0);
+  const mechanismDrag = map.features.reduce((sum, feature) => sum + ({ boost: -.7, slow: 1.1, 'slow-wall': .7, obstacle: .8, jump: .45, energy: -.15, 'item-box': -.25, oil: .65, 'moving-gate': .55 }[feature.type] || 0), 0);
   return Math.max(1, map.segments.reduce((sum, segment) => sum + segment.len / Math.max(8, speed - Math.abs(segment.yaw) * .055 - segment.drop * .03), 0) * difficultyDrag + mechanismDrag);
 }
 
@@ -30,7 +30,7 @@ export function generateMap(options = {}) {
     complexity: Math.min(1, Math.max(0, Number(options.complexity ?? .5))),
     shape: SHAPES.includes(options.shape) ? options.shape : 'mixed',
     environment: ENVIRONMENTS.includes(options.environment) ? options.environment : 'reef',
-    mechanisms: { boost: 3, slow: 2, obstacle: 3, jump: 1, 'slow-wall': 1, ...(options.mechanisms || {}) },
+    mechanisms: { boost: 3, slow: 2, obstacle: 3, jump: 1, 'slow-wall': 1, energy: 4, 'item-box': 2, oil: 2, 'moving-gate': 1, ...(options.mechanisms || {}) },
   };
   const rng = makeRng(recipe.seed);
   const targetLength = recipe.duration * BASE_SPEED * (1 - recipe.difficulty * .035);
@@ -61,8 +61,13 @@ export function generateMap(options = {}) {
   for (const segment of candidates) {
     if (!pool.length || !rng.chance(density)) continue;
     const type = rng.pick(pool);
-    const length = type === 'obstacle' ? 3 : type === 'jump' ? 12 : 20;
-    features.push({ id: `feature-${features.length + 1}`, type, segmentId: segment.id, offset: Math.round(segment.len * .38), theta: Number((rng.pick([-.42, 0, .42])).toFixed(2)), width: type === 'obstacle' ? .42 : .62, length, ...(type === 'jump' ? { jumpLength: 24 } : { strength: 1 }) });
+    const length = ['obstacle', 'energy', 'item-box'].includes(type) ? 3 : type === 'jump' ? 12 : type === 'moving-gate' ? 5 : 20;
+    const theta = Number((rng.pick([-.42, 0, .42])).toFixed(2));
+    features.push({ id: `feature-${features.length + 1}`, type, segmentId: segment.id, offset: Math.round(segment.len * .38), theta, width: ['obstacle', 'oil', 'moving-gate'].includes(type) ? .42 : .62, length, ...(type === 'jump' ? { jumpLength: 24 } : { strength: 1 }) });
+    // Risk/reward split: the fast line stays optional and always has a readable safe lane.
+    if (type === 'obstacle' && segment.len >= 155 && rng.chance(.55)) {
+      features.push({ id: `feature-${features.length + 1}`, type: 'boost', segmentId: segment.id, offset: Math.round(segment.len * .38 + 10), theta: Number((-theta || .42).toFixed(2)), width: .38, length: 14, strength: 1.15, riskReward: true });
+    }
   }
   const map = { schema: MAP_SCHEMA, name: `Course ${recipe.seed}`, seed: recipe.seed, generatorVersion: GENERATOR_VERSION, difficulty: recipe.difficulty >= .58 ? 'advanced' : 'beginner', environment: recipe.environment, recipe, segments, features };
   map.targetDuration = recipe.duration;
