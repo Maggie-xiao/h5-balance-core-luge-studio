@@ -1,0 +1,12 @@
+{
+  "name": "h5-balance-core-luge-studio",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Course generation, QA, gameplay tuning and endless playlist studio for Core Luge.",
+  "scripts": {
+    "serve": "node tools/serve.mjs",
+    "test": "node --test",
+    "verify": "node --check src/app.js && node --check src/core/generator.js && node --check src/core/qa.js && node --check src/core/store.js && node --check src/core/simulator.js && node --check src/runtime/endless-loader.js && npm test"
+  }
+}

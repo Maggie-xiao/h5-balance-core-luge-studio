@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101417">
+  <title>Core Luge Studio</title>
+  <link rel="stylesheet" href="styles/app.css">
+  <link rel="stylesheet" href="styles/fixes.css">
+</head>
+<body>
+  <header class="appbar">
+    <div class="brand"><span class="brand-mark">CL</span><div><strong>Core Luge Studio</strong><small>赛道生产与玩法调试</small></div></div>
+    <nav class="tabs" aria-label="工作区">
+      <button data-tab="generate" class="active">生成</button><button data-tab="library">地图库 <span id="library-count">0</span></button><button data-tab="editor">编辑</button><button data-tab="debug">玩法 Debug</button><button data-tab="endless">Endless</button>
+    </nav>
+    <div class="app-actions"><button id="import-button" title="导入地图">导入</button><button id="export-map-button" title="导出当前地图">导出</button></div>
+  </header>
+
+  <main>
+    <section id="tab-generate" class="tab-page active">
+      <aside class="control-panel">
+        <div class="section-title"><div><span class="eyebrow">GENERATOR V2</span><h1>生成赛道</h1></div><button id="random-seed" class="icon-button" title="随机种子" aria-label="随机种子">↻</button></div>
+        <label class="field"><span>Seed</span><input id="seed" type="number" min="0" max="4294967295" value="4517"></label>
+        <label class="field"><span>目标时长 <output id="duration-output">120 秒</output></span><input id="duration" type="range" min="45" max="240" value="120" step="5"></label>
+        <label class="field"><span>难度 <output id="difficulty-output">50%</output></span><input id="difficulty" type="range" min="0" max="100" value="50"></label>
+        <label class="field"><span>复杂度 <output id="complexity-output">50%</output></span><input id="complexity" type="range" min="0" max="100" value="50"></label>
+        <div class="field"><span>赛道形状</span><div id="shape-control" class="segmented"><button data-value="flowing">流线</button><button data-value="switchbacks">折返</button><button data-value="spiral">螺旋</button><button data-value="mixed" class="active">混合</button></div></div>
+        <label class="field"><span>环境背景</span><select id="environment"><option value="reef">珊瑚海沟</option><option value="alpine">雪山峡谷</option><option value="neon-city">霓虹都市</option><option value="volcanic">熔岩裂谷</option><option value="aurora">极光冰原</option></select></label>
+        <fieldset><legend>玩法机制权重</legend><div id="mechanism-inputs" class="mechanism-grid"></div></fieldset>
+        <div class="batch-row"><label>批量数量<input id="batch-count" type="number" value="12" min="1" max="100"></label><button id="generate-one">生成 1 张</button><button id="generate-batch" class="primary">批量生成并 QA</button></div>
+      </aside>
+      <section class="preview-panel">
+        <div class="preview-header"><div><span id="map-status" class="status review">待生成</span><h2 id="map-title">设置参数后生成第一张赛道</h2></div><div class="metrics" id="map-metrics"></div></div>
+        <canvas id="track-canvas" aria-label="赛道俯视图"></canvas>
+        <div class="legend"><span><i class="track-key"></i>赛道</span><span><i class="boost-key"></i>加速</span><span><i class="slow-key"></i>减速</span><span><i class="obstacle-key"></i>障碍</span><span><i class="jump-key"></i>跳台</span></div>
+        <div id="qa-summary" class="qa-summary empty">生成后会自动执行结构、安全、节奏与可玩性检查。</div>
+      </section>
+    </section>
+
+    <section id="tab-library" class="tab-page single-page">
+      <div class="page-heading"><div><span class="eyebrow">COURSE LIBRARY</span><h1>全部赛道地图</h1><p>每次修改都会生成新修订并重新 QA；只有通过且人工批准的版本可进入 Endless。</p></div><div class="filter-group"><button data-filter="all" class="active">全部</button><button data-filter="review">待审核</button><button data-filter="approved">已批准</button><button data-filter="failed">未通过</button></div></div>
+      <div id="library-grid" class="library-grid"></div>
+    </section>
+
+    <section id="tab-editor" class="tab-page editor-page">
+      <aside class="outline-panel"><div class="section-title"><h2>赛段</h2><button id="add-segment" class="icon-button" title="新增赛段">＋</button></div><ol id="segment-list"></ol></aside>
+      <section class="editor-center"><canvas id="editor-canvas" aria-label="可编辑赛道俯视图"></canvas><div id="editor-empty" class="empty-state">先从生成器或地图库打开一张地图</div></section>
+      <aside class="inspector-panel"><div class="section-title"><h2>属性</h2><span id="selection-label" class="muted">未选择</span></div><form id="inspector"></form><div class="editor-actions"><button id="auto-tune">自动调整时长</button><button id="save-revision" class="primary">保存修订并 QA</button></div><div id="editor-qa"></div></aside>
+    </section>
+
+    <section id="tab-debug" class="tab-page debug-page">
+      <aside class="control-panel"><span class="eyebrow">LIVE TUNING</span><h1>玩法 Debug</h1><div id="tuning-inputs"></div><div class="debug-help"><kbd>←</kbd><kbd>→</kbd> 左右平衡 <kbd>↑</kbd><kbd>↓</kbd> 后仰加速 / 前倾减速</div><button id="debug-reset">重新开始</button></aside>
+      <section class="debug-stage"><canvas id="debug-canvas" aria-label="玩法调试模拟器"></canvas><div class="debug-hud"><span id="debug-speed">0 km/h</span><span id="debug-distance">0 / 0 m</span><span id="debug-time">0.0 s</span></div><div class="balance-meter"><span id="balance-dot"></span></div><div id="debug-message">选择地图后即可实时调试</div></section>
+    </section>
+
+    <section id="tab-endless" class="tab-page single-page">
+      <div class="page-heading"><div><span class="eyebrow">ORDERED LOOP</span><h1>Endless 播放清单</h1><p>拖动调整顺序；通关后加载下一张，末尾自动回到第一张。</p></div><button id="export-endless" class="primary">导出 Endless 清单</button></div>
+      <div class="endless-layout"><div><h2>已批准地图</h2><div id="approved-pool" class="pool"></div></div><div><h2>播放顺序</h2><ol id="playlist" class="playlist"></ol></div></div>
+    </section>
+  </main>
+  <input id="file-input" type="file" accept="application/json,.json" hidden>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>
