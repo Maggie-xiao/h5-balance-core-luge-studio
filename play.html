@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#071014">
+  <title>Core Luge</title>
+  <link rel="stylesheet" href="styles/game.css">
+</head>
+<body>
+  <canvas id="game" aria-label="Core Luge 游戏画面"></canvas>
+  <div class="game-ui">
+    <header class="race-hud" id="race-hud" hidden>
+      <div><span class="label">速度</span><strong id="speed">0</strong><small>km/h</small></div>
+      <div class="center-stat"><span id="event">保持平衡</span><div class="charge"><i id="charge-fill"></i></div></div>
+      <div><span class="label">进度</span><strong id="progress">0%</strong><small id="time">0:00.0</small></div>
+    </header>
+    <div class="energy" id="energy" hidden><span>核心能量</span><b id="energy-value">0</b><i id="shield-indicator">护盾</i></div>
+    <button id="pause" class="icon-button" hidden aria-label="暂停" title="暂停">Ⅱ</button>
+
+    <section id="menu" class="screen menu-screen">
+      <div class="logo"><span>CORE</span><strong>LUGE</strong><small>核心雪橇</small></div>
+      <p>用身体控制速度与路线，在随机赛道中漂移、收集能量并冲向终点。</p>
+      <div class="menu-options">
+        <label>比赛模式<select id="mode"><option value="tour">随机巡回赛</option><option value="endless">Endless 连续赛</option></select></label>
+        <label>难度<select id="difficulty"><option value="0.25">轻松</option><option value="0.55" selected>竞速</option><option value="0.82">极限</option></select></label>
+      </div>
+      <button id="start" class="primary">开始比赛</button>
+      <div class="controls"><span>← → 左右平衡</span><span>↑ 后仰加速</span><span>↓ 前倾减速</span></div>
+      <a href="index.html">打开赛道工作台</a>
+    </section>
+
+    <section id="countdown" class="countdown" hidden><strong>3</strong></section>
+    <section id="paused" class="screen compact" hidden><h1>已暂停</h1><button id="resume" class="primary">继续</button><button data-home>返回主菜单</button></section>
+    <section id="results" class="screen results" hidden>
+      <span class="overline">FINISH</span><h1 id="result-title">完成比赛</h1>
+      <div class="result-time"><strong id="result-time">0:00.0</strong><span>完赛时间</span></div>
+      <div class="result-grid"><div><strong id="result-speed">0</strong><span>最高速度 km/h</span></div><div><strong id="result-energy">0</strong><span>能量</span></div><div><strong id="result-hits">0</strong><span>碰撞</span></div></div>
+      <button id="next" class="primary">下一条赛道</button><button id="retry">再跑一次</button><button data-home>返回主菜单</button>
+    </section>
+    <div class="touch-controls" id="touch-controls" hidden><button data-control="left" aria-label="左移">←</button><button data-control="brake" aria-label="减速">↓</button><button data-control="accelerate" aria-label="加速">↑</button><button data-control="right" aria-label="右移">→</button></div>
+  </div>
+  <script type="module" src="src/game.js"></script>
+</body>
+</html>

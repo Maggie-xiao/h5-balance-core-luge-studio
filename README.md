@@ -13,6 +13,9 @@ npm run serve
 
 Open `http://localhost:4173`. No install step or external package is required.
 
+- Player game: `http://localhost:4173/play.html`
+- Course studio: `http://localhost:4173/index.html`
+
 ## Workflow
 
 1. Set duration, difficulty, complexity, shape, environment, and mechanism mix.
