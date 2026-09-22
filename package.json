@@ -7,6 +7,6 @@
   "scripts": {
     "serve": "node tools/serve.mjs",
     "test": "node --test",
-    "verify": "node --check src/app.js && node --check src/game.js && node --check src/game-3d.js && node --check src/core/generator.js && node --check src/core/qa.js && node --check src/core/store.js && node --check src/core/simulator.js && node --check src/runtime/endless-loader.js && npm test"
+    "verify": "node --check src/app.js && node --check src/game.js && node --check src/game-3d.js && node --check src/meta-ui.js && node --check src/core/generator.js && node --check src/core/qa.js && node --check src/core/store.js && node --check src/core/simulator.js && node --check src/runtime/endless-loader.js && npm test"
   }
 }

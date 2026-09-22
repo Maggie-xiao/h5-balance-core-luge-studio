@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#071014">
   <title>Core Luge</title>
   <link rel="stylesheet" href="styles/game.css">
+  <link rel="stylesheet" href="styles/game-polish.css">
 </head>
 <body>
   <canvas id="game" aria-label="Core Luge 游戏画面"></canvas>
@@ -19,27 +20,22 @@
     <button id="pause" class="icon-button" hidden aria-label="暂停" title="暂停">Ⅱ</button>
 
     <section id="menu" class="screen menu-screen">
-      <div class="logo"><span>CORE</span><strong>LUGE</strong><small>核心雪橇</small></div>
-      <p>用身体控制速度与路线，在随机赛道中漂移、收集能量并冲向终点。</p>
-      <div class="menu-options">
-        <label>比赛模式<select id="mode"><option value="tour">随机巡回赛</option><option value="endless">Endless 连续赛</option></select></label>
-        <label>难度<select id="difficulty"><option value="0.25">轻松</option><option value="0.55" selected>竞速</option><option value="0.82">极限</option></select></label>
-      </div>
-      <button id="start" class="primary">开始比赛</button>
-      <div class="controls"><span>← → 左右平衡</span><span>↑ 后仰加速</span><span>↓ 前倾减速</span></div>
-      <a href="index.html">打开赛道工作台</a>
+      <header class="lobby-bar"><div class="pilot"><i>CL</i><span><small>车手等级</small><strong id="pilot-level">01 · 新秀</strong></span></div><div class="season"><span>极光赛季</span><b>剩余 12 天</b></div><div class="currency"><span>核心晶体</span><strong id="crystal-total">0</strong></div></header>
+      <div class="lobby-content"><div class="hero-copy"><div class="event-tag"><span>今日巡回赛</span><b>每日更新</b></div><div class="logo"><span>CORE</span><strong>LUGE</strong><small>核心雪橇 · 随机赛道巡回</small></div><p>压住弯心，积蓄漂移能量。每一条赛道都只有一次初见。</p><div class="best-line"><span>今日最佳</span><strong id="daily-best">--:--.-</strong><small>完成比赛后记录</small></div></div>
+      <aside class="race-card"><div class="race-art"><span>VOLCANIC RIFT</span><strong>裂谷<br>追光赛</strong><div class="route-mark">S-07</div></div><div class="race-meta"><div><span>预计时长</span><b>约 2 分钟</b></div><div><span>机制强度</span><b>竞速</b></div><div><span>今日奖励</span><b class="reward">+240</b></div></div><div class="mission"><span>额外挑战</span><strong>单局收集 5 个核心能量</strong><div><i id="mission-fill"></i></div></div><div class="menu-options"><label>模式<select id="mode"><option value="tour">随机巡回赛</option><option value="endless">Endless 连续赛</option></select></label><label>难度<select id="difficulty"><option value="0.25">轻松</option><option value="0.55" selected>竞速</option><option value="0.82">极限</option></select></label></div><button id="start" class="primary"><span>开始比赛</span><small>生成全新赛道</small></button></aside></div>
+      <footer class="lobby-footer"><div class="controls"><span><kbd>←</kbd><kbd>→</kbd>左右平衡</span><span><kbd>↑</kbd>后仰加速</span><span><kbd>↓</kbd>前倾减速</span></div><a href="index.html">赛道工作台</a></footer>
     </section>
 
     <section id="countdown" class="countdown" hidden><strong>3</strong></section>
     <section id="paused" class="screen compact" hidden><h1>已暂停</h1><button id="resume" class="primary">继续</button><button data-home>返回主菜单</button></section>
     <section id="results" class="screen results" hidden>
-      <span class="overline">FINISH</span><h1 id="result-title">完成比赛</h1>
+      <span class="overline">RACE COMPLETE</span><div class="rank-medal" id="rank-medal">A</div><h1 id="result-title">完成比赛</h1>
       <div class="result-time"><strong id="result-time">0:00.0</strong><span>完赛时间</span></div>
-      <div class="result-grid"><div><strong id="result-speed">0</strong><span>最高速度 km/h</span></div><div><strong id="result-energy">0</strong><span>能量</span></div><div><strong id="result-hits">0</strong><span>碰撞</span></div></div>
+      <div class="result-grid"><div><strong id="result-speed">0</strong><span>最高速度 km/h</span></div><div><strong id="result-energy">0</strong><span>核心能量</span></div><div><strong id="result-hits">0</strong><span>碰撞</span></div></div><div class="reward-strip"><span>本局奖励</span><strong id="result-reward">+120 核心晶体</strong><div class="level-progress"><i id="level-progress"></i></div><small id="next-unlock">再获得 380 晶体解锁新尾焰</small></div>
       <button id="next" class="primary">下一条赛道</button><button id="retry">再跑一次</button><button data-home>返回主菜单</button>
     </section>
     <div class="touch-controls" id="touch-controls" hidden><button data-control="left" aria-label="左移">←</button><button data-control="brake" aria-label="减速">↓</button><button data-control="accelerate" aria-label="加速">↑</button><button data-control="right" aria-label="右移">→</button></div>
   </div>
-  <script type="module" src="src/game-3d.js"></script>
+  <script type="module" src="src/game-3d.js"></script><script type="module" src="src/meta-ui.js"></script>
 </body>
 </html>
