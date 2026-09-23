@@ -7,6 +7,7 @@
   <title>Core Luge</title>
   <link rel="stylesheet" href="styles/game.css">
   <link rel="stylesheet" href="styles/game-polish.css">
+  <link rel="stylesheet" href="styles/garage.css">
   <link rel="stylesheet" href="styles/game-mobile.css">
 </head>
 <body>
@@ -20,11 +21,23 @@
     <div class="energy" id="energy" hidden><span>核心能量</span><b id="energy-value">0</b><i id="shield-indicator">护盾</i></div>
     <button id="pause" class="icon-button" hidden aria-label="暂停" title="暂停">Ⅱ</button>
 
-    <section id="menu" class="screen menu-screen">
+    <section id="garage" class="screen garage-screen">
+      <header class="garage-top"><div class="garage-brand"><i>CL</i><span><strong>CORE LUGE</strong><small>车手装备中心</small></span></div><div class="flow-steps"><b>01 选择赛车</b><span>02 赛事大厅</span><span>03 倒计时发车</span></div></header>
+      <div class="garage-intro"><span class="overline">SELECT YOUR RIDE</span><h1>选择你的赛车</h1><p>每台赛车都有独立操控特性。选择后进入赛事大厅，再由你决定赛道与难度。</p></div>
+      <div class="vehicle-grid" role="radiogroup" aria-label="赛车选择">
+        <button class="vehicle-card selected" data-vehicle="comet" role="radio" aria-checked="true"><span class="vehicle-number">01</span><span class="vehicle-preview comet"><i class="cockpit"></i><i class="body"></i><i class="rail left"></i><i class="rail right"></i></span><span class="vehicle-name"><small>全能型</small><strong>彗星 MK-I</strong></span><span class="vehicle-stats"><i><b style="width:76%"></b><em>速度</em></i><i><b style="width:78%"></b><em>操控</em></i><i><b style="width:74%"></b><em>稳定</em></i></span><span class="vehicle-trait">弯道能量回复更均衡</span></button>
+        <button class="vehicle-card" data-vehicle="razor" role="radio" aria-checked="false"><span class="vehicle-number">02</span><span class="vehicle-preview razor"><i class="cockpit"></i><i class="body"></i><i class="rail left"></i><i class="rail right"></i></span><span class="vehicle-name"><small>极速型</small><strong>风刃 GT</strong></span><span class="vehicle-stats"><i><b style="width:96%"></b><em>速度</em></i><i><b style="width:62%"></b><em>操控</em></i><i><b style="width:58%"></b><em>稳定</em></i></span><span class="vehicle-trait">更高极速，压弯要求更精准</span></button>
+        <button class="vehicle-card" data-vehicle="trail" role="radio" aria-checked="false"><span class="vehicle-number">03</span><span class="vehicle-preview trail"><i class="cockpit"></i><i class="body"></i><i class="rail left"></i><i class="rail right"></i></span><span class="vehicle-name"><small>稳定型</small><strong>岩虎 R</strong></span><span class="vehicle-stats"><i><b style="width:67%"></b><em>速度</em></i><i><b style="width:72%"></b><em>操控</em></i><i><b style="width:96%"></b><em>稳定</em></i></span><span class="vehicle-trait">越界减速更轻，适合初次挑战</span></button>
+        <button class="vehicle-card" data-vehicle="pulse" role="radio" aria-checked="false"><span class="vehicle-number">04</span><span class="vehicle-preview pulse"><i class="cockpit"></i><i class="body"></i><i class="rail left"></i><i class="rail right"></i></span><span class="vehicle-name"><small>漂移型</small><strong>脉冲 X</strong></span><span class="vehicle-stats"><i><b style="width:82%"></b><em>速度</em></i><i><b style="width:94%"></b><em>操控</em></i><i><b style="width:64%"></b><em>稳定</em></i></span><span class="vehicle-trait">转向灵敏，更快积蓄漂移能量</span></button>
+      </div>
+      <footer class="garage-actions"><div><span>已选择</span><strong id="selected-vehicle-name">彗星 MK-I</strong><small id="selected-vehicle-trait">均衡响应 · 推荐新车手</small></div><button id="garage-confirm" class="primary"><span>确认赛车</span><small>进入赛事大厅</small></button></footer>
+    </section>
+
+    <section id="menu" class="screen menu-screen" hidden>
       <header class="lobby-bar"><div class="pilot"><i>CL</i><span><small>车手等级</small><strong id="pilot-level">01 · 新秀</strong></span></div><div class="season"><span>极光赛季</span><b>剩余 12 天</b></div><div class="currency"><span>核心晶体</span><strong id="crystal-total">0</strong></div></header>
       <div class="lobby-content"><div class="hero-copy"><div class="event-tag"><span>今日巡回赛</span><b>每日更新</b></div><div class="logo"><span>CORE</span><strong>LUGE</strong><small>核心雪橇 · 随机赛道巡回</small></div><p>压住弯心，积蓄漂移能量。每一条赛道都只有一次初见。</p><div class="best-line"><span>今日最佳</span><strong id="daily-best">--:--.-</strong><small>完成比赛后记录</small></div></div>
       <aside class="race-card"><div class="race-art"><span>VOLCANIC RIFT</span><strong>裂谷<br>追光赛</strong><div class="route-mark">S-07</div></div><div class="race-meta"><div><span>预计时长</span><b>约 2 分钟</b></div><div><span>机制强度</span><b>竞速</b></div><div><span>今日奖励</span><b class="reward">+240</b></div></div><div class="mission"><span>额外挑战</span><strong>单局收集 5 个核心能量</strong><div><i id="mission-fill"></i></div></div><div class="menu-options"><label>模式<select id="mode"><option value="tour">随机巡回赛</option><option value="endless">Endless 连续赛</option></select></label><label>难度<select id="difficulty"><option value="0.25">轻松</option><option value="0.55" selected>竞速</option><option value="0.82">极限</option></select></label></div><button id="start" class="primary"><span>开始比赛</span><small>生成全新赛道</small></button></aside></div>
-      <footer class="lobby-footer"><div class="controls"><span><kbd>←</kbd><kbd>→</kbd>左右平衡</span><span><kbd>↑</kbd>后仰加速</span><span><kbd>↓</kbd>前倾减速</span></div><a href="index.html">赛道工作台</a></footer>
+      <footer class="lobby-footer"><div class="controls"><span><kbd>←</kbd><kbd>→</kbd>左右平衡</span><span><kbd>↑</kbd>后仰加速</span><span><kbd>↓</kbd>前倾减速</span></div><div class="lobby-links"><button id="change-vehicle">更换赛车</button><a href="index.html">赛道工作台</a></div></footer>
     </section>
 
     <section id="countdown" class="countdown" hidden><strong>3</strong></section>
