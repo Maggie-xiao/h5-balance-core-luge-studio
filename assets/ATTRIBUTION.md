@@ -14,3 +14,8 @@ Additional race barriers, fences, lights, billboards, grandstands, banners, flag
 
 - https://kenney.nl/assets/racing-kit
 - https://creativecommons.org/publicdomain/zero/1.0/
+
+Textured birch and maple trees, flowering bushes, grass, and dead trees are from Quaternius' "Ultimate Stylized Nature Pack", released under CC0 1.0. Texture resolution was optimized for web delivery:
+
+- https://quaternius.com/packs/ultimatestylizednature.html
+- https://creativecommons.org/publicdomain/zero/1.0/
