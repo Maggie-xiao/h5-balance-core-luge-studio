@@ -55,3 +55,23 @@ test('item boxes auto-use a balance-board friendly reward', () => {
   simulateStep(state, { steer: 0, lean: 0 }, map, {}, .016);
   assert.ok(['turbo', 'shield', 'magnet'].includes(state.item));
 });
+
+test('turbo bottles trigger a sustained speed boost', () => {
+  const map = generateMap({ seed: 12 });
+  const segment = map.segments[1];
+  map.features = [{ id: 'turbo', type: 'turbo-bottle', segmentId: segment.id, offset: 40, theta: 0, width: .6, length: 3 }];
+  const state = { speed: 12, lateral: 0, distance: map.segments[0].len + 40, elapsed: 0, penalties: 0, hit: new Set() };
+  simulateStep(state, { steer: 0, lean: 0 }, map, {}, .016);
+  assert.ok(state.boostTimer > 2.7);
+  assert.equal(state.event, '拾取：烈焰涡轮');
+});
+
+test('ramps launch the kart and briefly boost it', () => {
+  const map = generateMap({ seed: 14 });
+  const segment = map.segments[1];
+  map.features = [{ id: 'ramp', type: 'jump', segmentId: segment.id, offset: 40, theta: 0, width: .8, length: 12 }];
+  const state = { speed: 12, lateral: 0, distance: map.segments[0].len + 40, elapsed: 0, penalties: 0, hit: new Set() };
+  simulateStep(state, { steer: 0, lean: 0 }, map, {}, .016);
+  assert.ok(state.jumpTimer > 1);
+  assert.ok(state.boostTimer > .6);
+});

@@ -13,13 +13,13 @@ export function simulateStep(state, input, map, tuning, dt) {
   const merged = { ...DEFAULT_TUNING, ...tuning };
   const lean = Math.max(-1, Math.min(1, input.lean));
   const steer = Math.max(-1, Math.min(1, input.steer));
-  state.energy ??= 0; state.combo ??= 0; state.driftCharge ??= 0; state.boostTimer ??= 0; state.shieldTimer ??= 0; state.item ??= null; state.event ??= '';
+  state.energy ??= 0; state.combo ??= 0; state.driftCharge ??= 0; state.boostTimer ??= 0; state.shieldTimer ??= 0; state.jumpTimer ??= 0; state.item ??= null; state.event ??= '';
   const { segment } = segmentAt(map, state.distance);
   const drifting = Math.abs(segment.yaw || 0) >= 10 && Math.abs(steer) >= .4 && Math.sign(steer) === Math.sign(segment.yaw);
   if (drifting) state.driftCharge = Math.min(1.5, state.driftCharge + merged.driftChargeRate * Math.abs(steer) * dt);
   else if (state.driftCharge > .35) { state.boostTimer = .8 + Math.min(1.2, state.driftCharge); state.event = '漂移加速'; state.driftCharge = 0; }
   else state.driftCharge = Math.max(0, state.driftCharge - dt * .8);
-  state.boostTimer = Math.max(0, state.boostTimer - dt); state.shieldTimer = Math.max(0, state.shieldTimer - dt);
+  state.boostTimer = Math.max(0, state.boostTimer - dt); state.shieldTimer = Math.max(0, state.shieldTimer - dt); state.jumpTimer = Math.max(0, state.jumpTimer - dt);
   state.speed = Math.max(5, Math.min(merged.maxSpeed, state.speed + (lean > 0 ? merged.acceleration * lean : merged.brake * lean) * dt));
   if (state.boostTimer > 0) state.speed = Math.min(merged.maxSpeed + 6, state.speed + merged.driftBoost * dt);
   state.lateral += (steer * merged.steerGain - state.lateral * merged.balanceAssist) * dt;
@@ -34,6 +34,8 @@ export function simulateStep(state, input, map, tuning, dt) {
     state.hit.add(feature.id);
     const touches = Math.abs(state.lateral - feature.theta) < feature.width / 2 + .12;
     if (touches && feature.type === 'boost') { state.boostTimer = 1.35; state.event = '路线加速'; }
+    if (touches && feature.type === 'turbo-bottle') { state.boostTimer = 2.8; state.speed = Math.min(merged.maxSpeed+4,state.speed+4); state.event = '拾取：烈焰涡轮'; }
+    if (touches && feature.type === 'jump') { state.jumpTimer = 1.05; state.boostTimer = Math.max(state.boostTimer,.7); state.event = '飞跃跳台'; }
     if (touches && (feature.type === 'slow' || feature.type === 'slow-wall')) state.speed = Math.max(7, state.speed - 7);
     if (touches && feature.type === 'energy') { state.energy = Math.min(10, state.energy + 1); state.combo += 1; state.speed = Math.min(merged.maxSpeed, state.speed + .8); state.event = `能量连击 ×${state.combo}`; }
     if (touches && feature.type === 'item-box') {
