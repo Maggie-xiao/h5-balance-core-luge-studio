@@ -9,3 +9,8 @@ The following assets are used under the Creative Commons Attribution 4.0 license
 License: https://creativecommons.org/licenses/by/4.0/
 
 Models may be resized, recolored, reoriented, or instantiated for use in the game.
+
+Additional race barriers, fences, lights, billboards, grandstands, banners, flags, tents, pit buildings, trees, gantries, pylons, and radar equipment are from Kenney's "Racing Kit", released under CC0 1.0:
+
+- https://kenney.nl/assets/racing-kit
+- https://creativecommons.org/publicdomain/zero/1.0/
