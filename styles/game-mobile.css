@@ -1,0 +1,26 @@
+@media (max-width: 720px) {
+  .race-hud {
+    left: 8px;
+    right: 8px;
+    grid-template-columns: 68px minmax(0, 1fr) 68px;
+    padding: 9px 10px;
+  }
+
+  .race-hud strong {
+    font-size: 20px;
+  }
+
+  .center-stat span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .energy {
+    top: 88px;
+  }
+
+  .icon-button {
+    top: 88px;
+  }
+}
