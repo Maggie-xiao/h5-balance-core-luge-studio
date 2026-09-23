@@ -19,3 +19,9 @@ Textured birch and maple trees, flowering bushes, grass, and dead trees are from
 
 - https://quaternius.com/packs/ultimatestylizednature.html
 - https://creativecommons.org/publicdomain/zero/1.0/
+
+Commercial buildings, skyscrapers, industrial buildings, storage tanks, shipping containers, water towers, windmills, and street props are from Kenney's CC0 "City Kit (Commercial)" and "City Kit (Industrial)":
+
+- https://kenney.nl/assets/city-kit-commercial
+- https://kenney.nl/assets/city-kit-industrial
+- https://creativecommons.org/publicdomain/zero/1.0/
