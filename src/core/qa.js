@@ -34,7 +34,7 @@ export function runQA(map, tuning = {}) {
     if (Math.abs(feature.theta) + feature.width / 2 > 1.1) issues.push(issue('error', 'LANE', 'Mechanism crosses the safe track boundary', feature.id));
   }
   const rewards = map.features.filter((feature) => ['energy', 'item-box', 'boost', 'conveyor', 'turbo-bottle'].includes(feature.type)).length;
-  const hazards = map.features.filter((feature) => ['obstacle', 'oil', 'moving-gate', 'slow'].includes(feature.type)).length;
+  const hazards = map.features.filter((feature) => ['obstacle', 'tire-chicane', 'spinner', 'oil', 'moving-gate', 'slow'].includes(feature.type)).length;
   if (map.features.length >= 4 && rewards === 0) issues.push(issue('warning', 'NO_REWARD', 'Course has hazards but no reward line'));
   if (rewards > 0 && hazards > rewards * 2.5) issues.push(issue('warning', 'PUNISHING', 'Hazards substantially outnumber rewards'));
   const duration = estimateDuration(map, tuning);

@@ -101,3 +101,21 @@ test('a missed conveyor remains active while the kart steers onto it', () => {
   assert.equal(state.hit.has('belt'), true);
   assert.equal(state.event, '磁力传送带');
 });
+
+test('generated courses include both reward and hazard gameplay', () => {
+  const map = generateMap({ seed: 4517, duration: 105, complexity: .72 });
+  const hazards = map.features.filter((feature) => ['obstacle', 'tire-chicane', 'spinner', 'oil', 'moving-gate'].includes(feature.type));
+  assert.ok(hazards.length >= 2);
+  assert.ok(map.features.some((feature) => ['boost', 'conveyor', 'turbo-bottle', 'energy', 'item-box'].includes(feature.type)));
+});
+
+test('tire chicanes apply a collision penalty', () => {
+  const map = generateMap({ seed: 23 });
+  const segment = map.segments.find((item) => item.tag === 'straight' && item.id !== 'start');
+  map.features = [{ id: 'tires', type: 'tire-chicane', segmentId: segment.id, offset: 40, theta: 0, width: .42, length: 5 }];
+  const start = map.segments.slice(0, map.segments.indexOf(segment)).reduce((sum, item) => sum + item.len, 0);
+  const state = { speed: 18, lateral: 0, distance: start + 40, elapsed: 0, penalties: 0, hit: new Set() };
+  simulateStep(state, { steer: 0, lean: 0 }, map, {}, .016);
+  assert.ok(state.penalties > 0);
+  assert.equal(state.event, '撞上轮胎阵');
+});

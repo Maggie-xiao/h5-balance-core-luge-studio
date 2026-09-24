@@ -32,8 +32,8 @@ export function simulateStep(state, input, map, tuning, dt) {
   });
   if (feature) {
     const touches = Math.abs(state.lateral - feature.theta) < feature.width / 2 + .12;
-    const movingTheta = feature.type === 'moving-gate' ? Math.sin(state.elapsed * 2.4) * .62 : feature.theta;
-    const hitsHazard = ['obstacle', 'oil', 'moving-gate'].includes(feature.type) && Math.abs(state.lateral - movingTheta) < feature.width;
+    const movingTheta = feature.type === 'moving-gate' ? Math.sin(state.elapsed * 2.4) * .62 : feature.type === 'spinner' ? Math.sin(state.elapsed * 2.8) * .72 : feature.theta;
+    const hitsHazard = ['obstacle', 'tire-chicane', 'spinner', 'oil', 'moving-gate'].includes(feature.type) && Math.abs(state.lateral - movingTheta) < feature.width;
     if (touches || hitsHazard) state.hit.add(feature.id);
     if (touches && feature.type === 'boost') { state.boostTimer = 1.35; state.event = '路线加速'; }
     if (touches && feature.type === 'conveyor') { state.boostTimer = 2; state.speed = Math.min(merged.maxSpeed + 5, state.speed + 5); state.event = '磁力传送带'; }
@@ -49,7 +49,7 @@ export function simulateStep(state, input, map, tuning, dt) {
       if (state.item === 'magnet') state.energy = Math.min(10, state.energy + 2);
       state.event = { turbo: '补给：涡轮', shield: '补给：护盾', magnet: '补给：能量磁吸' }[state.item];
     }
-    if (hitsHazard && state.shieldTimer <= 0) { state.speed *= feature.type === 'oil' ? .68 : .55; state.penalties += merged.hazardPenalty; state.combo = 0; state.event = feature.type === 'oil' ? '油膜打滑' : '发生碰撞'; }
+    if (hitsHazard && state.shieldTimer <= 0) { state.speed *= feature.type === 'oil' ? .68 : .55; state.penalties += merged.hazardPenalty; state.combo = 0; state.event = feature.type === 'oil' ? '油膜打滑' : feature.type === 'spinner' ? '撞上旋转横杆' : feature.type === 'tire-chicane' ? '撞上轮胎阵' : '发生碰撞'; }
     else if (hitsHazard) { state.shieldTimer = 0; state.event = '护盾抵消碰撞'; }
   }
   state.elapsed += dt;

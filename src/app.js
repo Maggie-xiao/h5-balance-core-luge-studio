@@ -5,8 +5,8 @@ import { DEFAULT_TUNING, simulateStep } from './core/simulator.js';
 import { totalLength } from './core/schema.js';
 
 const $ = (id) => document.getElementById(id);
-const FEATURE_LABELS = { boost: '加速带', conveyor: '磁力传送带', 'turbo-bottle':'涡轮加速瓶', slow: '减速带', obstacle: '障碍', jump: '跳台', 'slow-wall': '摩擦墙', energy: '能量环', 'item-box': '随机补给', oil: '油膜', 'moving-gate': '横移门' };
-const FEATURE_COLORS = { boost: '#63db9b', conveyor: '#42d9ff', 'turbo-bottle':'#ffcf4f', slow: '#f4b85c', obstacle: '#ef766f', jump: '#7ba7ff', 'slow-wall': '#d887ce', energy: '#f5df62', 'item-box': '#65dff2', oil: '#8f75aa', 'moving-gate': '#ff8c72' };
+const FEATURE_LABELS = { boost: '加速带', conveyor: '磁力传送带', 'turbo-bottle':'涡轮加速瓶', slow: '减速带', obstacle: '施工路障', 'tire-chicane':'轮胎阵', spinner:'旋转横杆', jump: '跳台', 'slow-wall': '摩擦墙', energy: '能量晶体', 'item-box': '随机补给', oil: '油膜', 'moving-gate': '横移门' };
+const FEATURE_COLORS = { boost: '#63db9b', conveyor: '#42d9ff', 'turbo-bottle':'#ffcf4f', slow: '#f4b85c', obstacle: '#ef766f', 'tire-chicane':'#1f3136', spinner:'#ff7f68', jump: '#7ba7ff', 'slow-wall': '#d887ce', energy: '#f5df62', 'item-box': '#65dff2', oil: '#8f75aa', 'moving-gate': '#ff8c72' };
 let library = loadLibrary();
 let playlist = loadPlaylist();
 let currentMap = library[0] ? structuredClone(library[0].map) : null;
@@ -27,7 +27,7 @@ function recipe() {
 
 for (const type of Object.keys(FEATURE_LABELS)) {
   const label = document.createElement('label'); label.textContent = FEATURE_LABELS[type];
-  const defaults = { boost: 3, conveyor: 3, 'turbo-bottle':3, slow: 2, obstacle: 3, jump: 2, 'slow-wall': 1, energy: 4, 'item-box': 2, oil: 2, 'moving-gate': 1 };
+  const defaults = { boost: 3, conveyor: 3, 'turbo-bottle':3, slow: 2, obstacle: 3, 'tire-chicane':3, spinner:2, jump: 2, 'slow-wall': 1, energy: 4, 'item-box': 2, oil: 2, 'moving-gate': 2 };
   label.innerHTML += `<input data-mechanism="${type}" type="number" min="0" max="10" value="${defaults[type]}">`;
   $('mechanism-inputs').append(label);
 }

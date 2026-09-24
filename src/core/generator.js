@@ -18,7 +18,7 @@ function chooseTurn(rng, shape, heading, difficulty) {
 export function estimateDuration(map, tuning = {}) {
   const speed = Number(tuning.baseSpeed || BASE_SPEED);
   const difficultyDrag = 1 + map.recipe.difficulty * .045;
-  const mechanismDrag = map.features.reduce((sum, feature) => sum + ({ boost: -.7, conveyor: -1, 'turbo-bottle': -.8, slow: 1.1, 'slow-wall': .7, obstacle: .8, jump: .45, energy: -.15, 'item-box': -.25, oil: .65, 'moving-gate': .55 }[feature.type] || 0), 0);
+  const mechanismDrag = map.features.reduce((sum, feature) => sum + ({ boost: -.7, conveyor: -1, 'turbo-bottle': -.8, slow: 1.1, 'slow-wall': .7, obstacle: .8, 'tire-chicane': .75, spinner: .9, jump: .45, energy: -.15, 'item-box': -.25, oil: .65, 'moving-gate': .55 }[feature.type] || 0), 0);
   return Math.max(1, map.segments.reduce((sum, segment) => sum + segment.len / Math.max(8, speed - Math.abs(segment.yaw) * .055 - segment.drop * .03), 0) * difficultyDrag + mechanismDrag);
 }
 
@@ -30,7 +30,7 @@ export function generateMap(options = {}) {
     complexity: Math.min(1, Math.max(0, Number(options.complexity ?? .5))),
     shape: SHAPES.includes(options.shape) ? options.shape : 'mixed',
     environment: ENVIRONMENTS.includes(options.environment) ? options.environment : 'reef',
-    mechanisms: { boost: 3, conveyor: 3, 'turbo-bottle': 3, slow: 2, obstacle: 3, jump: 2, 'slow-wall': 1, energy: 4, 'item-box': 2, oil: 2, 'moving-gate': 1, ...(options.mechanisms || {}) },
+    mechanisms: { boost: 3, conveyor: 3, 'turbo-bottle': 3, slow: 2, obstacle: 3, 'tire-chicane': 3, spinner: 2, jump: 2, 'slow-wall': 1, energy: 4, 'item-box': 2, oil: 2, 'moving-gate': 2, ...(options.mechanisms || {}) },
   };
   const rng = makeRng(recipe.seed);
   const targetLength = recipe.duration * BASE_SPEED * (1 - recipe.difficulty * .035);
@@ -72,7 +72,10 @@ export function generateMap(options = {}) {
     if (type === 'obstacle' && segment.len >= 155 && rng.chance(.55)) {
       features.push({ id: `feature-${features.length + 1}`, type: 'boost', segmentId: segment.id, offset: Math.round(segment.len * .38 + 10), theta: Number((-theta || .42).toFixed(2)), width: .38, length: 14, strength: 1.15, riskReward: true });
     }
-    if (segment.len >= 155 && rng.chance(.7)) {
+    if (segment.len >= 105 && index % 2 === 0) {
+      const hazardTypes=['tire-chicane','spinner','obstacle','moving-gate','oil'],hazardType=hazardTypes[index%hazardTypes.length],hazardTheta=hazardType==='spinner'||hazardType==='moving-gate'?0:Number(rng.pick([-.42,.42]).toFixed(2));
+      features.push({id:`feature-${features.length+1}`,type:hazardType,segmentId:segment.id,offset:Math.min(segment.len-18,Math.round(segment.len*.68)),theta:hazardTheta,width:hazardType==='spinner'?.36:.42,length:hazardType==='oil'?12:5,strength:1});
+    } else if (segment.len >= 125 && rng.chance(.7)) {
       const bonusType=rng.chance(.55)?'item-box':'boost',bonusOffset=Math.min(segment.len-(bonusType==='boost'?24:12),Math.round(segment.len*.66));
       features.push({id:`feature-${features.length+1}`,type:bonusType,segmentId:segment.id,offset:bonusOffset,theta:Number(rng.pick([-.42,0,.42]).toFixed(2)),width:.55,length:bonusType==='boost'?18:3,strength:1.2});
     }
