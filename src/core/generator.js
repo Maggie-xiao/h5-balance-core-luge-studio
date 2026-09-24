@@ -18,7 +18,7 @@ function chooseTurn(rng, shape, heading, difficulty) {
 export function estimateDuration(map, tuning = {}) {
   const speed = Number(tuning.baseSpeed || BASE_SPEED);
   const difficultyDrag = 1 + map.recipe.difficulty * .045;
-  const mechanismDrag = map.features.reduce((sum, feature) => sum + ({ boost: -.7, 'turbo-bottle': -.8, slow: 1.1, 'slow-wall': .7, obstacle: .8, jump: .45, energy: -.15, 'item-box': -.25, oil: .65, 'moving-gate': .55 }[feature.type] || 0), 0);
+  const mechanismDrag = map.features.reduce((sum, feature) => sum + ({ boost: -.7, conveyor: -1, 'turbo-bottle': -.8, slow: 1.1, 'slow-wall': .7, obstacle: .8, jump: .45, energy: -.15, 'item-box': -.25, oil: .65, 'moving-gate': .55 }[feature.type] || 0), 0);
   return Math.max(1, map.segments.reduce((sum, segment) => sum + segment.len / Math.max(8, speed - Math.abs(segment.yaw) * .055 - segment.drop * .03), 0) * difficultyDrag + mechanismDrag);
 }
 
@@ -30,7 +30,7 @@ export function generateMap(options = {}) {
     complexity: Math.min(1, Math.max(0, Number(options.complexity ?? .5))),
     shape: SHAPES.includes(options.shape) ? options.shape : 'mixed',
     environment: ENVIRONMENTS.includes(options.environment) ? options.environment : 'reef',
-    mechanisms: { boost: 3, 'turbo-bottle': 3, slow: 2, obstacle: 3, jump: 2, 'slow-wall': 1, energy: 4, 'item-box': 2, oil: 2, 'moving-gate': 1, ...(options.mechanisms || {}) },
+    mechanisms: { boost: 3, conveyor: 3, 'turbo-bottle': 3, slow: 2, obstacle: 3, jump: 2, 'slow-wall': 1, energy: 4, 'item-box': 2, oil: 2, 'moving-gate': 1, ...(options.mechanisms || {}) },
   };
   const rng = makeRng(recipe.seed);
   const targetLength = recipe.duration * BASE_SPEED * (1 - recipe.difficulty * .035);
@@ -41,10 +41,12 @@ export function generateMap(options = {}) {
   for (let index = 0; index < count; index++) {
     const len = Math.round(rideLength / count + rng.int(-22, 22));
     const quiet = index === 0 || index === count - 1;
-    const yaw = quiet ? 0 : chooseTurn(rng, recipe.shape, heading, recipe.difficulty);
+    const playZone = !quiet && index % 3 === 1;
+    const structureZone = !quiet && !playZone && index % 5 === 3;
+    const yaw = quiet || playZone || structureZone ? 0 : chooseTurn(rng, recipe.shape, heading, recipe.difficulty);
     heading += yaw;
-    const tunnel = !quiet && recipe.complexity > .45 && rng.chance(.08 + recipe.complexity * .12);
-    const bridge = !quiet && !tunnel && Math.abs(yaw)<=4 && recipe.complexity > .42 && rng.chance(.07 + recipe.complexity * .1);
+    const tunnel = structureZone && recipe.complexity > .45 && rng.chance(.58);
+    const bridge = structureZone && !tunnel && recipe.complexity > .42;
     segments.push({
       id: `seg-${index + 1}`, len: Math.max(105, len), yaw,
       drop: Number((4 + recipe.difficulty * 6 + rng.next() * 4).toFixed(1)),
@@ -55,22 +57,23 @@ export function generateMap(options = {}) {
     });
   }
   segments.push({ id: 'finish', len: 250, yaw: 0, drop: 1.2, rad: 4.6, roof: 0, bank: 0, spin: 0, ease: 30, tag: 'finish' });
-  const candidates = segments.filter((segment) => ['straight','bridge'].includes(segment.tag) && segment.len >= 130 && !segment.roof);
+  const candidates = segments.filter((segment) => segment.tag === 'straight' && segment.len >= 105 && !segment.roof && !['start','finish'].includes(segment.id));
   const pool = weightsFor(recipe.mechanisms);
   const features = [];
-  const density = .52 + recipe.complexity * .34;
-  for (const segment of candidates) {
-    if (!pool.length || !rng.chance(density)) continue;
-    const type = rng.pick(pool);
-    const length = ['obstacle', 'energy', 'item-box','turbo-bottle'].includes(type) ? 3 : type === 'jump' ? 12 : type === 'moving-gate' ? 5 : 20;
+  const showcase = ['conveyor', 'turbo-bottle', 'jump', 'item-box', 'energy', 'boost'];
+  for (const [index, segment] of candidates.entries()) {
+    if (!pool.length) continue;
+    const preferred = showcase[index % showcase.length];
+    const type = Number(recipe.mechanisms[preferred] || 0) > 0 ? preferred : rng.pick(pool);
+    const length = ['obstacle', 'energy', 'item-box','turbo-bottle'].includes(type) ? 3 : type === 'jump' ? 12 : type === 'moving-gate' ? 5 : type === 'conveyor' ? 28 : 20;
     const theta = Number((rng.pick([-.42, 0, .42])).toFixed(2));
     features.push({ id: `feature-${features.length + 1}`, type, segmentId: segment.id, offset: Math.round(segment.len * .38), theta, width: ['obstacle', 'oil', 'moving-gate'].includes(type) ? .42 : .62, length, ...(type === 'jump' ? { jumpLength: 24 } : { strength: 1 }) });
     // Risk/reward split: the fast line stays optional and always has a readable safe lane.
     if (type === 'obstacle' && segment.len >= 155 && rng.chance(.55)) {
       features.push({ id: `feature-${features.length + 1}`, type: 'boost', segmentId: segment.id, offset: Math.round(segment.len * .38 + 10), theta: Number((-theta || .42).toFixed(2)), width: .38, length: 14, strength: 1.15, riskReward: true });
     }
-    if (segment.len >= 155 && rng.chance(.48)) {
-      const bonusType=rng.chance(.55)?'item-box':'boost',bonusOffset=Math.min(segment.len-24,Math.round(segment.len*.66));
+    if (segment.len >= 155 && rng.chance(.7)) {
+      const bonusType=rng.chance(.55)?'item-box':'boost',bonusOffset=Math.min(segment.len-(bonusType==='boost'?24:12),Math.round(segment.len*.66));
       features.push({id:`feature-${features.length+1}`,type:bonusType,segmentId:segment.id,offset:bonusOffset,theta:Number(rng.pick([-.42,0,.42]).toFixed(2)),width:.55,length:bonusType==='boost'?18:3,strength:1.2});
     }
   }

@@ -2,7 +2,7 @@ import { generateMap } from './core/generator.js';
 import { DEFAULT_TUNING, simulateStep } from './core/simulator.js';
 import { totalLength } from './core/schema.js';
 const $=id=>document.getElementById(id),canvas=$('game'),ctx=canvas.getContext('2d'),keys=new Set(),touch={left:0,right:0,accelerate:0,brake:0};
-const colors={boost:'#5ff0a0','turbo-bottle':'#ffd85a',slow:'#f2b955',obstacle:'#ff6363',jump:'#6dbeff','slow-wall':'#d783cf',energy:'#ffe65c','item-box':'#57e4f5',oil:'#775b8e','moving-gate':'#ff8a69'};
+const colors={boost:'#5ff0a0',conveyor:'#42d9ff','turbo-bottle':'#ffd85a',slow:'#f2b955',obstacle:'#ff6363',jump:'#6dbeff','slow-wall':'#d783cf',energy:'#ffe65c','item-box':'#57e4f5',oil:'#775b8e','moving-gate':'#ff8a69'};
 const env={reef:['#05171c','#0d3f48','#41c8bc'],alpine:['#07131d','#244657','#d7f3f4'],'neon-city':['#09071a','#30205e','#ff5da8'],volcanic:['#180b08','#4b1d13','#ff7247'],aurora:['#071420','#174b50','#73f4bd']};
 let map,state,phase='menu',last=performance.now(),seed=4517,countdown=0,flash=0,shake=0,maxSpeed=0,collisions=0,lastPenalty=0;
 function resize(){const r=Math.min(devicePixelRatio,2);canvas.width=innerWidth*r;canvas.height=innerHeight*r;canvas.style.width=`${innerWidth}px`;canvas.style.height=`${innerHeight}px`;ctx.setTransform(r,0,0,r,0,0)}addEventListener('resize',resize);resize();

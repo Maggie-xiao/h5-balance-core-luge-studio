@@ -75,3 +75,15 @@ test('ramps launch the kart and briefly boost it', () => {
   assert.ok(state.jumpTimer > 1);
   assert.ok(state.boostTimer > .6);
 });
+
+test('conveyor belts add speed and sustained boost', () => {
+  const map = generateMap({ seed: 18 });
+  const segment = map.segments.find((item) => item.tag === 'straight' && item.id !== 'start');
+  map.features = [{ id: 'belt', type: 'conveyor', segmentId: segment.id, offset: 40, theta: 0, width: .62, length: 28 }];
+  const start = map.segments.slice(0, map.segments.indexOf(segment)).reduce((sum, item) => sum + item.len, 0);
+  const state = { speed: 12, lateral: 0, distance: start + 40, elapsed: 0, penalties: 0, hit: new Set() };
+  simulateStep(state, { steer: 0, lean: 0 }, map, {}, .016);
+  assert.ok(state.speed > 16);
+  assert.ok(state.boostTimer > 1.9);
+  assert.equal(state.event, '磁力传送带');
+});

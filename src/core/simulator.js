@@ -34,6 +34,7 @@ export function simulateStep(state, input, map, tuning, dt) {
     state.hit.add(feature.id);
     const touches = Math.abs(state.lateral - feature.theta) < feature.width / 2 + .12;
     if (touches && feature.type === 'boost') { state.boostTimer = 1.35; state.event = '路线加速'; }
+    if (touches && feature.type === 'conveyor') { state.boostTimer = 2; state.speed = Math.min(merged.maxSpeed + 5, state.speed + 5); state.event = '磁力传送带'; }
     if (touches && feature.type === 'turbo-bottle') { state.boostTimer = 2.8; state.speed = Math.min(merged.maxSpeed+4,state.speed+4); state.event = '拾取：烈焰涡轮'; }
     if (touches && feature.type === 'jump') { state.jumpTimer = 1.05; state.boostTimer = Math.max(state.boostTimer,.7); state.event = '飞跃跳台'; }
     if (touches && (feature.type === 'slow' || feature.type === 'slow-wall')) state.speed = Math.max(7, state.speed - 7);
