@@ -87,3 +87,17 @@ test('conveyor belts add speed and sustained boost', () => {
   assert.ok(state.boostTimer > 1.9);
   assert.equal(state.event, '磁力传送带');
 });
+
+test('a missed conveyor remains active while the kart steers onto it', () => {
+  const map = generateMap({ seed: 19 });
+  const segment = map.segments.find((item) => item.tag === 'straight' && item.id !== 'start');
+  map.features = [{ id: 'belt', type: 'conveyor', segmentId: segment.id, offset: 40, theta: 0, width: .9, length: 28 }];
+  const start = map.segments.slice(0, map.segments.indexOf(segment)).reduce((sum, item) => sum + item.len, 0);
+  const state = { speed: 12, lateral: 1.1, distance: start + 40, elapsed: 0, penalties: 0, hit: new Set() };
+  simulateStep(state, { steer: 0, lean: 0 }, map, {}, .016);
+  assert.equal(state.hit.has('belt'), false);
+  state.lateral = .3;
+  simulateStep(state, { steer: 0, lean: 0 }, map, {}, .016);
+  assert.equal(state.hit.has('belt'), true);
+  assert.equal(state.event, '磁力传送带');
+});

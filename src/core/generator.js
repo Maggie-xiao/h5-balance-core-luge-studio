@@ -66,8 +66,8 @@ export function generateMap(options = {}) {
     const preferred = showcase[index % showcase.length];
     const type = Number(recipe.mechanisms[preferred] || 0) > 0 ? preferred : rng.pick(pool);
     const length = ['obstacle', 'energy', 'item-box','turbo-bottle'].includes(type) ? 3 : type === 'jump' ? 12 : type === 'moving-gate' ? 5 : type === 'conveyor' ? 28 : 20;
-    const theta = Number((rng.pick([-.42, 0, .42])).toFixed(2));
-    features.push({ id: `feature-${features.length + 1}`, type, segmentId: segment.id, offset: Math.round(segment.len * .38), theta, width: ['obstacle', 'oil', 'moving-gate'].includes(type) ? .42 : .62, length, ...(type === 'jump' ? { jumpLength: 24 } : { strength: 1 }) });
+    const theta = type === 'conveyor' ? 0 : Number((rng.pick([-.42, 0, .42])).toFixed(2));
+    features.push({ id: `feature-${features.length + 1}`, type, segmentId: segment.id, offset: Math.round(segment.len * .38), theta, width: type === 'conveyor' ? .9 : ['obstacle', 'oil', 'moving-gate'].includes(type) ? .42 : .62, length, ...(type === 'jump' ? { jumpLength: 24 } : { strength: 1 }) });
     // Risk/reward split: the fast line stays optional and always has a readable safe lane.
     if (type === 'obstacle' && segment.len >= 155 && rng.chance(.55)) {
       features.push({ id: `feature-${features.length + 1}`, type: 'boost', segmentId: segment.id, offset: Math.round(segment.len * .38 + 10), theta: Number((-theta || .42).toFixed(2)), width: .38, length: 14, strength: 1.15, riskReward: true });
