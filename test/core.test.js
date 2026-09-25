@@ -119,3 +119,15 @@ test('tire chicanes apply a collision penalty', () => {
   assert.ok(state.penalties > 0);
   assert.equal(state.event, '撞上轮胎阵');
 });
+
+test('spike strips apply a stronger penalty', () => {
+  const map = generateMap({ seed: 31 });
+  const segment = map.segments.find((item) => item.tag === 'straight' && item.id !== 'start');
+  map.features = [{ id: 'spikes', type: 'spikes', segmentId: segment.id, offset: 40, theta: 0, width: .42, length: 5 }];
+  const start = map.segments.slice(0, map.segments.indexOf(segment)).reduce((sum, item) => sum + item.len, 0);
+  const state = { speed: 20, lateral: 0, distance: start + 40, elapsed: 0, penalties: 0, hit: new Set() };
+  simulateStep(state, { steer: 0, lean: 0 }, map, {}, .016);
+  assert.ok(state.speed < 10);
+  assert.ok(state.penalties > 3);
+  assert.equal(state.event, '碾过尖刺板');
+});
