@@ -13,7 +13,7 @@ export function simulateStep(state, input, map, tuning, dt) {
   const merged = { ...DEFAULT_TUNING, ...tuning };
   const lean = Math.max(-1, Math.min(1, input.lean));
   const steer = Math.max(-1, Math.min(1, input.steer));
-  state.energy ??= 0; state.combo ??= 0; state.driftCharge ??= 0; state.boostTimer ??= 0; state.shieldTimer ??= 0; state.jumpTimer ??= 0; state.item ??= null; state.event ??= '';
+  state.energy ??= 0; state.coins ??= 0; state.combo ??= 0; state.driftCharge ??= 0; state.boostTimer ??= 0; state.shieldTimer ??= 0; state.jumpTimer ??= 0; state.item ??= null; state.event ??= '';
   const { segment } = segmentAt(map, state.distance);
   const drifting = Math.abs(segment.yaw || 0) >= 10 && Math.abs(steer) >= .4 && Math.sign(steer) === Math.sign(segment.yaw);
   if (drifting) state.driftCharge = Math.min(1.5, state.driftCharge + merged.driftChargeRate * Math.abs(steer) * dt);
@@ -41,6 +41,7 @@ export function simulateStep(state, input, map, tuning, dt) {
     if (touches && feature.type === 'jump') { state.jumpTimer = 1.05; state.boostTimer = Math.max(state.boostTimer,.7); state.event = '飞跃跳台'; }
     if (touches && (feature.type === 'slow' || feature.type === 'slow-wall')) state.speed = Math.max(7, state.speed - 7);
     if (touches && feature.type === 'energy') { state.energy = Math.min(10, state.energy + 1); state.combo += 1; state.speed = Math.min(merged.maxSpeed, state.speed + .8); state.event = `能量连击 ×${state.combo}`; }
+    if (touches && feature.type === 'coin') { state.coins += 1; state.speed = Math.min(merged.maxSpeed, state.speed + .25); state.event = `金币 ×${state.coins}`; }
     if (touches && feature.type === 'item-box') {
       const roll = (map.seed + state.hit.size * 17) % 3;
       state.item = ['turbo', 'shield', 'magnet'][roll];

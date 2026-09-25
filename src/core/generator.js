@@ -30,7 +30,7 @@ export function generateMap(options = {}) {
     complexity: Math.min(1, Math.max(0, Number(options.complexity ?? .5))),
     shape: SHAPES.includes(options.shape) ? options.shape : 'mixed',
     environment: ENVIRONMENTS.includes(options.environment) ? options.environment : 'reef',
-    mechanisms: { boost: 3, conveyor: 3, 'turbo-bottle': 3, slow: 3, obstacle: 3, 'tire-chicane': 3, spinner: 2, spikes: 2, jump: 2, 'slow-wall': 1, energy: 4, 'item-box': 2, oil: 2, 'moving-gate': 2, ...(options.mechanisms || {}) },
+    mechanisms: { boost: 3, conveyor: 3, 'turbo-bottle': 3, coin: 5, slow: 3, obstacle: 3, 'tire-chicane': 3, spinner: 2, spikes: 2, jump: 2, 'slow-wall': 1, energy: 4, 'item-box': 2, oil: 2, 'moving-gate': 2, ...(options.mechanisms || {}) },
   };
   const rng = makeRng(recipe.seed);
   const targetLength = recipe.duration * BASE_SPEED * (1 - recipe.difficulty * .035);
@@ -64,6 +64,7 @@ export function generateMap(options = {}) {
   for (const [index, segment] of candidates.entries()) {
     if (!pool.length) continue;
     const preferred = showcase[index % showcase.length];
+    if(Number(recipe.mechanisms.coin||0)>0)for(let coin=0;coin<5;coin++)features.push({id:`feature-${features.length+1}`,type:'coin',segmentId:segment.id,offset:38+coin*4,theta:Number((Math.sin(coin*.9)*.38).toFixed(2)),width:.5,length:2,strength:1});
     const type = Number(recipe.mechanisms[preferred] || 0) > 0 ? preferred : rng.pick(pool);
     const length = ['obstacle', 'energy', 'item-box','turbo-bottle'].includes(type) ? 3 : type === 'jump' ? 12 : type === 'moving-gate' ? 5 : type === 'conveyor' ? 28 : 20;
     const theta = type === 'conveyor' ? 0 : Number((rng.pick([-.42, 0, .42])).toFixed(2));

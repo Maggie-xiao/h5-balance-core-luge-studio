@@ -131,3 +131,15 @@ test('spike strips apply a stronger penalty', () => {
   assert.ok(state.penalties > 3);
   assert.equal(state.event, '碾过尖刺板');
 });
+
+test('coins are collected independently from core energy', () => {
+  const map = generateMap({ seed: 41 });
+  const segment = map.segments.find((item) => item.tag === 'straight' && item.id !== 'start');
+  map.features = [{ id: 'coin', type: 'coin', segmentId: segment.id, offset: 40, theta: 0, width: .5, length: 2 }];
+  const start = map.segments.slice(0, map.segments.indexOf(segment)).reduce((sum, item) => sum + item.len, 0);
+  const state = { speed: 12, lateral: 0, distance: start + 40, elapsed: 0, penalties: 0, hit: new Set(), energy: 0 };
+  simulateStep(state, { steer: 0, lean: 0 }, map, {}, .016);
+  assert.equal(state.coins, 1);
+  assert.equal(state.energy, 0);
+  assert.equal(state.event, '金币 ×1');
+});
