@@ -44,10 +44,12 @@ if (garageIntro && vehicleGrid && !document.getElementById('garage-mode')) {
   secondGrid.querySelectorAll('[data-vehicle-two]').forEach(card => card.addEventListener('click', () => syncSecondSelection(card.dataset.vehicleTwo)));
   syncSecondSelection(playerTwoVehicle);
 
-  document.querySelectorAll('[data-race-mode]').forEach(button => button.addEventListener('click', () => {
-    const versus = button.dataset.raceMode === 'versus';
+  const selectRaceMode = selected => {
+    const versus = selected === 'versus';
+    localStorage.setItem('core-luge.race-mode', selected);
+    document.body.dataset.raceMode = selected;
     document.querySelectorAll('[data-race-mode]').forEach(item => {
-      const active = item === button;
+      const active = item.dataset.raceMode === selected;
       item.classList.toggle('active', active);
       item.setAttribute('aria-checked', active);
     });
@@ -55,7 +57,9 @@ if (garageIntro && vehicleGrid && !document.getElementById('garage-mode')) {
     document.querySelector('.player-two-label').hidden = !versus;
     document.getElementById('driver-one-label').classList.toggle('versus', versus);
     if (mode) mode.value = versus ? 'versus' : 'tour';
-    dispatchEvent(new CustomEvent('core-luge-mode', { detail: versus ? 'versus' : 'tour' }));
-  }));
+    dispatchEvent(new CustomEvent('core-luge-mode', { detail: selected }));
+  };
+  document.querySelectorAll('[data-race-mode]').forEach(button => button.addEventListener('click', () => selectRaceMode(button.dataset.raceMode)));
+  selectRaceMode(localStorage.getItem('core-luge.race-mode') || 'solo');
   if (mode) mode.closest('label').hidden = true;
 }
