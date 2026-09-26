@@ -13,7 +13,12 @@ if (!document.getElementById('player-two-hud')) document.querySelector('.game-ui
 if (!document.getElementById('race-map')) document.querySelector('.game-ui')?.insertAdjacentHTML('afterbegin', '<aside id="race-map" class="race-map" hidden><canvas id="minimap" width="220" height="170"></canvas><div id="race-position"><strong>1</strong><small>/ 6</small></div></aside><ol id="race-ranking" class="race-ranking" hidden></ol><button id="sound-toggle" class="sound-toggle" aria-label="声音开关" title="声音开关">♪</button>');
 document.getElementById('sound-toggle')?.addEventListener('click', event => { event.currentTarget.classList.toggle('muted'); dispatchEvent(new CustomEvent('core-luge-sound', { detail: !event.currentTarget.classList.contains('muted') })); });
 const countdown = document.getElementById('countdown');
-if (countdown && !countdown.querySelector('.start-lights')) countdown.innerHTML = '<div class="start-lights"><i></i><i></i><i></i></div><span>CORE LUGE GRAND PRIX</span><strong>3</strong><small>READY TO RACE</small>';
+if (countdown && !countdown.querySelector('.start-lights')) countdown.innerHTML = '<div class="countdown-curtain left"></div><div class="countdown-curtain right"></div><div class="race-intro"><span id="countdown-mode">WORLD TOUR</span><h2>CORE LUGE</h2><small>STARTING GRID · POSITION 01</small></div><div class="start-lights"><i></i><i></i><i></i></div><strong>3</strong><div class="go-burst">GO!</div>';
+const results = document.getElementById('results');
+if (results && !document.getElementById('result-stars')) {
+  results.insertAdjacentHTML('afterbegin', '<div class="finish-wipe"></div><div class="confetti" aria-hidden="true">' + Array.from({ length: 24 }, (_, index) => `<i style="--i:${index}"></i>`).join('') + '</div>');
+  document.getElementById('result-title')?.insertAdjacentHTML('afterend', '<div id="result-stars" class="result-stars" aria-label="比赛评分"><i>★</i><i>★</i><i>★</i></div><div class="result-score"><span>RACE SCORE</span><strong id="result-score">0</strong></div>');
+}
 document.querySelector('.lobby-footer .controls')?.insertAdjacentHTML('beforeend', '<span class="p2-help"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 2P</span>');
 
 const garageIntro = document.querySelector('.garage-intro');
