@@ -117,7 +117,10 @@ test('tire chicanes apply a collision penalty', () => {
   const state = { speed: 18, lateral: 0, distance: start + 40, elapsed: 0, penalties: 0, hit: new Set() };
   simulateStep(state, { steer: 0, lean: 0 }, map, {}, .016);
   assert.ok(state.penalties > 0);
-  assert.equal(state.event, '撞上轮胎阵');
+  assert.equal(state.event, '轮胎墙反弹！');
+  assert.equal(state.impactType, 'tire-chicane');
+  assert.ok(state.impactTimer > .5);
+  assert.notEqual(state.lateral, 0);
 });
 
 test('spike strips apply a stronger penalty', () => {
@@ -129,7 +132,9 @@ test('spike strips apply a stronger penalty', () => {
   simulateStep(state, { steer: 0, lean: 0 }, map, {}, .016);
   assert.ok(state.speed < 10);
   assert.ok(state.penalties > 3);
-  assert.equal(state.event, '碾过尖刺板');
+  assert.equal(state.event, '爆胎颠簸！');
+  assert.equal(state.impactType, 'spikes');
+  assert.ok(state.impactTimer > .8);
 });
 
 test('coins are collected independently from core energy', () => {

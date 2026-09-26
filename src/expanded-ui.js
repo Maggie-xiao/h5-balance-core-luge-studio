@@ -8,6 +8,7 @@ if (mode && !mode.querySelector('[value="versus"]')) {
 }
 const energy = document.getElementById('energy');
 if (energy && !document.getElementById('coin-value')) energy.insertAdjacentHTML('beforeend', '<span class="coin-count">金币 <b id="coin-value">0</b></span><span id="versus-rank" hidden>1P 领先</span>');
+if (!document.getElementById('collision-flash')) document.querySelector('.game-ui')?.insertAdjacentHTML('afterbegin', '<div id="collision-flash" class="collision-flash"></div>');
 const countdown = document.getElementById('countdown');
 if (countdown && !countdown.querySelector('.start-lights')) countdown.innerHTML = '<div class="start-lights"><i></i><i></i><i></i></div><span>CORE LUGE GRAND PRIX</span><strong>3</strong><small>READY TO RACE</small>';
 document.querySelector('.lobby-footer .controls')?.insertAdjacentHTML('beforeend', '<span class="p2-help"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 2P</span>');

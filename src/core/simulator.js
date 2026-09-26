@@ -13,13 +13,13 @@ export function simulateStep(state, input, map, tuning, dt) {
   const merged = { ...DEFAULT_TUNING, ...tuning };
   const lean = Math.max(-1, Math.min(1, input.lean));
   const steer = Math.max(-1, Math.min(1, input.steer));
-  state.energy ??= 0; state.coins ??= 0; state.combo ??= 0; state.driftCharge ??= 0; state.boostTimer ??= 0; state.shieldTimer ??= 0; state.jumpTimer ??= 0; state.item ??= null; state.event ??= '';
+  state.energy ??= 0; state.coins ??= 0; state.combo ??= 0; state.driftCharge ??= 0; state.boostTimer ??= 0; state.shieldTimer ??= 0; state.jumpTimer ??= 0; state.impactTimer ??= 0; state.bumpTimer ??= 0; state.impactType ??= ''; state.impactDirection ??= 0; state.item ??= null; state.event ??= '';
   const { segment } = segmentAt(map, state.distance);
   const drifting = Math.abs(segment.yaw || 0) >= 10 && Math.abs(steer) >= .4 && Math.sign(steer) === Math.sign(segment.yaw);
   if (drifting) state.driftCharge = Math.min(1.5, state.driftCharge + merged.driftChargeRate * Math.abs(steer) * dt);
   else if (state.driftCharge > .35) { state.boostTimer = .8 + Math.min(1.2, state.driftCharge); state.event = '漂移加速'; state.driftCharge = 0; }
   else state.driftCharge = Math.max(0, state.driftCharge - dt * .8);
-  state.boostTimer = Math.max(0, state.boostTimer - dt); state.shieldTimer = Math.max(0, state.shieldTimer - dt); state.jumpTimer = Math.max(0, state.jumpTimer - dt);
+  state.boostTimer = Math.max(0, state.boostTimer - dt); state.shieldTimer = Math.max(0, state.shieldTimer - dt); state.jumpTimer = Math.max(0, state.jumpTimer - dt); state.impactTimer = Math.max(0, state.impactTimer - dt); state.bumpTimer = Math.max(0, state.bumpTimer - dt);
   state.speed = Math.max(5, Math.min(merged.maxSpeed, state.speed + (lean > 0 ? merged.acceleration * lean : merged.brake * lean) * dt));
   if (state.boostTimer > 0) state.speed = Math.min(merged.maxSpeed + 6, state.speed + merged.driftBoost * dt);
   state.lateral += (steer * merged.steerGain - state.lateral * merged.balanceAssist) * dt;
@@ -39,7 +39,7 @@ export function simulateStep(state, input, map, tuning, dt) {
     if (touches && feature.type === 'conveyor') { state.boostTimer = 2; state.speed = Math.min(merged.maxSpeed + 5, state.speed + 5); state.event = '磁力传送带'; }
     if (touches && feature.type === 'turbo-bottle') { state.boostTimer = 2.8; state.speed = Math.min(merged.maxSpeed+4,state.speed+4); state.event = '拾取：烈焰涡轮'; }
     if (touches && feature.type === 'jump') { state.jumpTimer = 1.05; state.boostTimer = Math.max(state.boostTimer,.7); state.event = '飞跃跳台'; }
-    if (touches && (feature.type === 'slow' || feature.type === 'slow-wall')) state.speed = Math.max(7, state.speed - 7);
+    if (touches && (feature.type === 'slow' || feature.type === 'slow-wall')) { state.speed = Math.max(7, state.speed - 7); state.bumpTimer = .42; state.impactType = 'bump'; state.event = '减速带颠簸'; }
     if (touches && feature.type === 'energy') { state.energy = Math.min(10, state.energy + 1); state.combo += 1; state.speed = Math.min(merged.maxSpeed, state.speed + .8); state.event = `能量连击 ×${state.combo}`; }
     if (touches && feature.type === 'coin') { state.coins += 1; state.speed = Math.min(merged.maxSpeed, state.speed + .25); state.event = `金币 ×${state.coins}`; }
     if (touches && feature.type === 'item-box') {
@@ -50,7 +50,18 @@ export function simulateStep(state, input, map, tuning, dt) {
       if (state.item === 'magnet') state.energy = Math.min(10, state.energy + 2);
       state.event = { turbo: '补给：涡轮', shield: '补给：护盾', magnet: '补给：能量磁吸' }[state.item];
     }
-    if (hitsHazard && state.shieldTimer <= 0) { state.speed *= feature.type === 'spikes' ? .42 : feature.type === 'oil' ? .68 : .55; state.penalties += merged.hazardPenalty*(feature.type==='spikes'?1.5:1); state.combo = 0; state.event = feature.type === 'spikes' ? '碾过尖刺板' : feature.type === 'oil' ? '油膜打滑' : feature.type === 'spinner' ? '撞上旋转横杆' : feature.type === 'tire-chicane' ? '撞上轮胎阵' : '发生碰撞'; }
+    if (hitsHazard && state.shieldTimer <= 0) {
+      state.speed *= feature.type === 'spikes' ? .42 : feature.type === 'oil' ? .68 : .55;
+      state.penalties += merged.hazardPenalty*(feature.type==='spikes'?1.5:1);
+      state.combo = 0;
+      state.impactType = feature.type;
+      state.impactTimer = feature.type === 'oil' ? 1.25 : feature.type === 'spikes' ? .9 : .62;
+      state.impactDirection = state.lateral >= movingTheta ? 1 : -1;
+      if (Math.abs(state.lateral - movingTheta) < .04) state.impactDirection = state.hit.size % 2 ? 1 : -1;
+      const knockback = feature.type === 'spinner' ? .5 : feature.type === 'tire-chicane' ? .34 : feature.type === 'oil' ? .22 : .26;
+      state.lateral = Math.max(-1.25, Math.min(1.25, state.lateral + state.impactDirection * knockback));
+      state.event = feature.type === 'spikes' ? '爆胎颠簸！' : feature.type === 'oil' ? '油膜打滑！' : feature.type === 'spinner' ? '横杆击中！' : feature.type === 'tire-chicane' ? '轮胎墙反弹！' : '撞击失衡！';
+    }
     else if (hitsHazard) { state.shieldTimer = 0; state.event = '护盾抵消碰撞'; }
   }
   state.elapsed += dt;
