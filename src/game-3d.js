@@ -116,6 +116,7 @@ function update(dt){if(phase==='countdown'){countdown+=dt;const n=3-Math.floor(c
 function spawnImpactBurst(position,type,featureId,direction=1){if(!impactFxRoot){impactFxRoot=new THREE.Group();scene.add(impactFxRoot)}const struck=features?.children.find(root=>root.userData.feature?.id===featureId);if(struck&&!struck.userData.knocked){struck.userData.knocked=true;struck.rotation.z+=direction*.62;struck.position.y+=.22;struck.position.x+=direction*.38}const palette=type==='oil'?[0xa16ee8,0x3c304c]:type==='spikes'?[0xffdc55,0xffffff]:[0xff6b42,0xffd55f],count=type==='spikes'?22:16;for(let i=0;i<count;i++){const mesh=new THREE.Mesh(i%3?new THREE.IcosahedronGeometry(.07+(i%4)*.025,0):new THREE.BoxGeometry(.08,.08,.28),new THREE.MeshBasicMaterial({color:palette[i%palette.length],transparent:true}));mesh.position.copy(position).add(new THREE.Vector3((Math.random()-.5)*1.4,.35+Math.random()*.65,(Math.random()-.5)*1.2));mesh.userData.velocity=new THREE.Vector3((Math.random()-.5)*5,2+Math.random()*4,(Math.random()-.5)*5);mesh.userData.life=.5+Math.random()*.45;mesh.userData.maxLife=mesh.userData.life;impactFxRoot.add(mesh);impactParticles.push(mesh)}}
 function updateImpactParticles(){for(let i=impactParticles.length-1;i>=0;i--){const particle=impactParticles[i];particle.userData.life-=.016;particle.userData.velocity.y-=.15;particle.position.addScaledVector(particle.userData.velocity,.016);particle.rotation.x+=.18;particle.rotation.z+=.24;particle.material.opacity=Math.max(0,particle.userData.life/particle.userData.maxLife);if(particle.userData.life<=0){particle.geometry.dispose();particle.material.dispose();particle.removeFromParent();impactParticles.splice(i,1)}}}
 const VISUAL_COLLISION_TYPES=new Set(['obstacle','tire-chicane','spinner','spikes','slow-wall','moving-gate']);
+const SOLID_COLLISION_TYPES=new Set(['obstacle','tire-chicane','spinner','moving-gate']);
 function triggerVisualCrash(feature,type,direction){
   if(feature)state.hit.add(feature.id);
   const isSpike=type==='spikes',isEdge=type==='edge';
@@ -138,13 +139,20 @@ function detectVisualCollisions(){
   const radius=.86,position=player.position;
   for(const root of features.children){
     const feature=root.userData.feature;
-    if(!feature||!VISUAL_COLLISION_TYPES.has(feature.type)||state.hit.has(feature.id))continue;
+    if(!feature||!VISUAL_COLLISION_TYPES.has(feature.type))continue;
     root.updateWorldMatrix(true,true);
     const box=new THREE.Box3().setFromObject(root);
     if(position.x<box.min.x-radius||position.x>box.max.x+radius||position.z<box.min.z-radius||position.z>box.max.z+radius)continue;
     const frame=at(distanceOf(feature)),right=new THREE.Vector3(Math.cos(frame.heading),0,-Math.sin(frame.heading)),offset=position.clone().sub(new THREE.Vector3(frame.x,position.y,frame.z)).dot(right);
-    triggerVisualCrash(feature,feature.type,offset>=feature.theta*4?1:-1);
-    state.lateral=THREE.MathUtils.clamp(state.lateral+state.impactDirection*.32,-.96,.96);break;
+    const direction=offset>=feature.theta*4?1:-1;
+    if(SOLID_COLLISION_TYPES.has(feature.type)){
+      state.distance=Math.max(0,Math.min(state.distance,distanceOf(feature)-2.35));
+      state.speed=Math.min(state.speed,3.2);
+      state.lateral=THREE.MathUtils.clamp(state.lateral+direction*.42,-.96,.96);
+      place();
+    }
+    if(!state.hit.has(feature.id)||state.impactTimer<=.05)triggerVisualCrash(feature,feature.type,direction);
+    break;
   }
 }
 function applyImpactFeedback(){const react=(kart,racer)=>{if(!kart||!racer)return;const impact=Math.min(1,racer.impactTimer*2.2),bump=Math.min(1,racer.bumpTimer*3);if(impact>0){if(!racer.impactShown){spawnImpactBurst(kart.position,racer.impactType,racer.impactFeatureId,racer.impactDirection);racer.impactShown=true}const rapid=Math.sin(racer.elapsed*(racer.impactType==='oil'?19:48));kart.rotation.z+=rapid*impact*(racer.impactType==='oil'?.22:.11)*racer.impactDirection;kart.rotation.x+=Math.abs(rapid)*impact*(racer.impactType==='spikes'?.18:.07);kart.position.y+=Math.abs(rapid)*impact*(racer.impactType==='spikes'?.3:.12)}else racer.impactShown=false;if(bump>0){kart.rotation.x+=Math.sin(racer.elapsed*55)*bump*.13;kart.position.y+=Math.abs(Math.sin(racer.elapsed*55))*bump*.18}};react(player,state);if(multiplayer)react(rival,rivalState);updateImpactParticles();const strength=Math.min(1,state.impactTimer*2.2);if(strength>0){camera.position.x+=Math.sin(state.elapsed*83)*strength*.16;camera.position.y+=Math.cos(state.elapsed*71)*strength*.11}const flash=$('collision-flash');if(flash){const active=Math.max(state.impactTimer,state.bumpTimer);flash.style.opacity=String(Math.min(.78,active*1.7));flash.className=`collision-flash ${state.impactType||''}`}}
