@@ -3,6 +3,7 @@ import { GLTFLoader } from '../vendor/addons/loaders/GLTFLoader.js';
 import { generateMap } from './core/generator.js';
 import { DEFAULT_TUNING, simulateStep } from './core/simulator.js';
 import { totalLength } from './core/schema.js';
+import { planAutopilot } from './core/autopilot.js';
 
 const $=id=>document.getElementById(id),canvas=$('game'),renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'}),scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(61,innerWidth/innerHeight,.1,900),rivalCamera=new THREE.PerspectiveCamera(61,innerWidth/innerHeight,.1,900),world=new THREE.Group(),keys=new Set(),touch={left:0,right:0,accelerate:0,brake:0};
 const assetTemplates={},loader=new GLTFLoader();
@@ -111,11 +112,7 @@ function place(first=false){
   player.rotation.y=f.heading;player.rotation.x=state.jumpTimer>0?Math.sin((1.05-state.jumpTimer)*Math.PI)*.12:belt.pitch;player.rotation.z=THREE.MathUtils.lerp(player.rotation.z,-state.lateral*.32,.16);placeRival(first);placeBots();followCamera(camera,state,first)
 }
 function autoPilotInput(){
-  const hardHazards=new Set(['obstacle','tire-chicane','spinner','spikes','oil','moving-gate']),lookAhead=28+state.speed*.45,candidates=[-.78,-.52,-.26,0,.26,.52,.78],hazards=[];
-  for(const feature of map.features){if(!hardHazards.has(feature.type))continue;const ahead=distanceOf(feature)-state.distance;if(ahead<-2||ahead>lookAhead)continue;const arrival=state.elapsed+Math.max(0,ahead)/Math.max(5,state.speed),lane=feature.type==='moving-gate'?Math.sin(arrival*2.4)*.62:feature.type==='spinner'?Math.sin(arrival*2.8)*.72:feature.theta,radius=feature.type==='spinner'?.78:feature.type==='moving-gate'?.68:Math.max(.28,feature.width/2+.18);hazards.push({ahead,lane,radius})}
-  let best=0,bestScore=Infinity;for(const lane of candidates){let score=Math.abs(lane)*.18+Math.abs(lane-autoPilotLane)*.32;for(const hazard of hazards){const clearance=Math.abs(lane-hazard.lane)-hazard.radius,urgency=1-hazard.ahead/lookAhead;score+=clearance<.2?(12+urgency*35)*(1-Math.max(0,clearance)/.2):Math.max(0,.65-clearance)*urgency}if(score<bestScore){bestScore=score;best=lane}}
-  autoPilotLane=best;autoPilotRisk=hazards.filter(hazard=>hazard.ahead<18&&Math.abs(state.lateral-hazard.lane)<hazard.radius+.25).length;
-  const error=autoPilotLane-state.lateral,steer=THREE.MathUtils.clamp(error*3.4,-1,1);return{steer,lean:1};
+  const plan=planAutopilot(state,map,autoPilotLane);autoPilotLane=plan.lane;autoPilotRisk=plan.risk;return{steer:plan.steer,lean:plan.lean};
 }
 function input(){if(autoPilot)return autoPilotInput();let steer=(keys.has('ArrowRight')||(!multiplayer&&keys.has('KeyD'))||touch.right?1:0)-(keys.has('ArrowLeft')||(!multiplayer&&keys.has('KeyA'))||touch.left?1:0),lean=(keys.has('ArrowUp')||(!multiplayer&&keys.has('KeyW'))||touch.accelerate?1:0)-(keys.has('ArrowDown')||(!multiplayer&&keys.has('KeyS'))||touch.brake?1:0);const pad=navigator.getGamepads?.()[0];if(pad){if(Math.abs(pad.axes[0]||0)>.08)steer=pad.axes[0];if(Math.abs(pad.axes[1]||0)>.08)lean=-pad.axes[1]}return{steer,lean}}
 function rivalInput(){return{steer:(keys.has('KeyD')?1:0)-(keys.has('KeyA')?1:0),lean:(keys.has('KeyW')?1:0)-(keys.has('KeyS')?1:0)}}
@@ -123,7 +120,7 @@ function updateRacePresentation(){const progress=Math.min(1,state.distance/total
 function update(dt){if(phase==='countdown'){countdown+=dt;const n=3-Math.floor(countdown);$('countdown').querySelector('strong').textContent=n>0?n:'GO';if(countdown>=3.75)setPhase('race');return}if(phase!=='race')return;const spec=VEHICLES[selectedVehicle],controls=input(),penalty=state.penalties;controls.steer*=spec.steer;simulateStep(state,controls,map,{...DEFAULT_TUNING,baseSpeed:7,maxSpeed:spec.maxSpeed},dt);state.collisionCooldown=Math.max(0,state.collisionCooldown-dt);if(!controls.lean&&state.speed>8)state.speed=Math.max(8,state.speed-dt*2.2);if(Math.abs(state.lateral)>1.08){state.speed=Math.max(6,state.speed-dt*13/spec.stability);state.lateral*=1-dt*1.8*spec.stability;state.event='越界减速'}if(selectedVehicle==='pulse'&&Math.abs(controls.steer)>.55)state.driftCharge=Math.min(1.5,state.driftCharge+dt*.16);if(state.penalties>penalty)collisions++;maxSpeed=Math.max(maxSpeed,state.speed);place();updateRacePresentation();features.children.forEach(mesh=>{const f=mesh.userData.feature;if(!f)return;if(['item-box','turbo-bottle','energy'].includes(f.type)){mesh.rotation.y+=dt*1.8;mesh.position.y+=Math.sin(state.elapsed*4+distanceOf(f))*.002}if(f.type==='conveyor')mesh.children.forEach(part=>{if(part.userData.beltArrow){part.position.z=((part.position.z+dt*8+f.length/2)%f.length)-f.length/2;part.position.y=beltDeckHeight(part.position.z,f.length)+.16}});if(state.hit.has(f.id)&&['item-box','turbo-bottle','energy'].includes(f.type))mesh.visible=false});player.traverse(o=>{if(!o.userData.exhaustFlame)return;o.visible=state.boostTimer>0;if(o.visible){const pulse=.8+Math.sin(state.elapsed*32)*.18;o.scale.set(pulse,pulse,.85+Math.random()*.55)}});if(state.distance>=totalLength(map))finish();hud()}
 function spawnImpactBurst(position,type,featureId,direction=1){if(!impactFxRoot){impactFxRoot=new THREE.Group();scene.add(impactFxRoot)}const struck=features?.children.find(root=>root.userData.feature?.id===featureId);if(struck&&!struck.userData.knocked){struck.userData.knocked=true;struck.rotation.z+=direction*.62;struck.position.y+=.22;struck.position.x+=direction*.38}const palette=type==='oil'?[0xa16ee8,0x3c304c]:type==='spikes'?[0xffdc55,0xffffff]:[0xff6b42,0xffd55f],count=type==='spikes'?22:16;for(let i=0;i<count;i++){const mesh=new THREE.Mesh(i%3?new THREE.IcosahedronGeometry(.07+(i%4)*.025,0):new THREE.BoxGeometry(.08,.08,.28),new THREE.MeshBasicMaterial({color:palette[i%palette.length],transparent:true}));mesh.position.copy(position).add(new THREE.Vector3((Math.random()-.5)*1.4,.35+Math.random()*.65,(Math.random()-.5)*1.2));mesh.userData.velocity=new THREE.Vector3((Math.random()-.5)*5,2+Math.random()*4,(Math.random()-.5)*5);mesh.userData.life=.5+Math.random()*.45;mesh.userData.maxLife=mesh.userData.life;impactFxRoot.add(mesh);impactParticles.push(mesh)}}
 function updateImpactParticles(){for(let i=impactParticles.length-1;i>=0;i--){const particle=impactParticles[i];particle.userData.life-=.016;particle.userData.velocity.y-=.15;particle.position.addScaledVector(particle.userData.velocity,.016);particle.rotation.x+=.18;particle.rotation.z+=.24;particle.material.opacity=Math.max(0,particle.userData.life/particle.userData.maxLife);if(particle.userData.life<=0){particle.geometry.dispose();particle.material.dispose();particle.removeFromParent();impactParticles.splice(i,1)}}}
-const VISUAL_COLLISION_TYPES=new Set(['obstacle','tire-chicane','spinner','spikes','slow-wall','moving-gate']);
+const VISUAL_COLLISION_TYPES=new Set(['obstacle','tire-chicane','spikes','slow-wall']);
 function triggerVisualCrash(feature,type,direction){
   if(feature)state.hit.add(feature.id);
   const isSpike=type==='spikes',isEdge=type==='edge';
@@ -143,7 +140,6 @@ function detectVisualCollisions(){
     triggerVisualCrash(null,'edge',-side);state.lateral=side*.82;return;
   }
   if(edge<.88)state.edgeImpactLocked=false;
-  if(autoPilot)return;
   if(state.collisionCooldown>0)return;
   const radius=.86,position=player.position;
   for(const root of features.children){
