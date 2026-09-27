@@ -15,6 +15,8 @@
 <body>
   <canvas id="game" aria-label="Core Luge 游戏画面"></canvas>
   <div class="game-ui">
+    <div id="speed-fx" class="speed-fx" aria-hidden="true"></div>
+    <div id="checkpoint-banner" class="checkpoint-banner" aria-live="polite"><small>SECTOR CLEAR</small><strong>25%</strong></div>
     <header class="race-hud" id="race-hud" hidden>
       <div><span class="label">速度</span><strong id="speed">0</strong><small>km/h</small></div>
       <div class="center-stat"><span id="event">保持平衡</span><div class="charge"><i id="charge-fill"></i></div></div>
@@ -58,7 +60,7 @@
     <section id="results" class="screen results" hidden>
       <span class="overline">RACE COMPLETE</span><div class="rank-medal" id="rank-medal">A</div><h1 id="result-title">完成比赛</h1>
       <div class="result-time"><strong id="result-time">0:00.0</strong><span>完赛时间</span></div>
-      <div class="result-grid"><div><strong id="result-speed">0</strong><span>最高速度 km/h</span></div><div><strong id="result-energy">0</strong><span>核心能量</span></div><div><strong id="result-hits">0</strong><span>碰撞</span></div></div><div class="reward-strip"><span>本局奖励</span><strong id="result-reward">+120 核心晶体</strong><div class="level-progress"><i id="level-progress"></i></div><small id="next-unlock">再获得 380 晶体解锁新尾焰</small></div>
+      <div class="result-grid"><div><strong id="result-speed">0</strong><span>最高速度 km/h</span></div><div><strong id="result-energy">0</strong><span>核心能量</span></div><div><strong id="result-coins">0</strong><span>金币</span></div><div><strong id="result-hits">0</strong><span>碰撞</span></div></div><div class="reward-strip"><span>本局奖励</span><strong id="result-reward">+120 核心晶体</strong><div class="level-progress"><i id="level-progress"></i></div><small id="next-unlock">再获得 380 晶体解锁新尾焰</small></div>
       <button id="next" class="primary">下一条赛道</button><button id="retry">再跑一次</button><button data-home>返回主菜单</button>
     </section>
     <div class="touch-controls" id="touch-controls" hidden><button data-control="left" aria-label="左移">←</button><button data-control="brake" aria-label="减速">↓</button><button data-control="accelerate" aria-label="加速">↑</button><button data-control="right" aria-label="右移">→</button></div>
