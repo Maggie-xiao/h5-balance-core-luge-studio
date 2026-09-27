@@ -20,6 +20,7 @@ if (results && !document.getElementById('result-stars')) {
   document.getElementById('result-title')?.insertAdjacentHTML('afterend', '<div id="result-stars" class="result-stars" aria-label="比赛评分"><i>★</i><i>★</i><i>★</i></div><div class="result-score"><span>RACE SCORE</span><strong id="result-score">0</strong></div>');
 }
 document.querySelector('.lobby-footer .controls')?.insertAdjacentHTML('beforeend', '<span class="p2-help"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 2P</span>');
+document.querySelector('.lobby-bar .currency')?.insertAdjacentHTML('beforebegin', '<div class="lobby-loadout"><span><small>赛事</small><b id="lobby-mode-name">大奖赛</b></span><span><small>赛车</small><b id="lobby-vehicle-name">彗星 MK-I</b></span></div>');
 
 const garageIntro = document.querySelector('.garage-intro');
 const vehicleGrid = document.querySelector('.vehicle-grid');
@@ -38,6 +39,7 @@ if (garageIntro && vehicleGrid && !document.getElementById('garage-mode')) {
     document.getElementById('showcase-stability').style.width = `${spec[5]}%`;
     document.querySelector('.showcase-platform>span').textContent = spec[6];
     document.getElementById('showcase-kart').className = `vehicle-preview ${id}`;
+    if (document.getElementById('lobby-vehicle-name')) document.getElementById('lobby-vehicle-name').textContent = spec[1];
   };
   vehicleGrid.querySelectorAll('[data-vehicle]').forEach(card => card.addEventListener('click', () => updateShowcase(card.dataset.vehicle)));
   updateShowcase(localStorage.getItem('core-luge.vehicle') || 'comet');
@@ -82,6 +84,8 @@ if (garageIntro && vehicleGrid && !document.getElementById('garage-mode')) {
     document.querySelector('.player-two-label').hidden = !versus;
     document.getElementById('driver-one-label').classList.toggle('versus', versus);
     if (mode) mode.value = versus ? 'versus' : 'tour';
+    const modeNames = { 'grand-prix': '大奖赛', survival: '生存赛', 'time-trial': '计时赛', versus: '对战赛' };
+    if (document.getElementById('lobby-mode-name')) document.getElementById('lobby-mode-name').textContent = modeNames[selected] || '大奖赛';
     dispatchEvent(new CustomEvent('core-luge-mode', { detail: selected }));
   };
   document.querySelectorAll('[data-race-mode]').forEach(button => button.addEventListener('click', () => selectRaceMode(button.dataset.raceMode)));
