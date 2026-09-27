@@ -1,0 +1,20 @@
+.debug-panel{position:absolute;z-index:30;right:18px;top:160px;width:268px;pointer-events:auto;background:rgba(5,14,18,.94);border:1px solid rgba(121,239,169,.35);border-top:3px solid #79efa9;box-shadow:0 18px 55px rgba(0,0,0,.45);backdrop-filter:blur(14px);transition:transform .2s}
+.debug-panel.collapsed{transform:translateX(282px)}
+.debug-toggle{position:absolute;right:100%;top:-3px;width:52px;height:40px;border:1px solid rgba(121,239,169,.5);border-right:0;background:#10251f;color:#79efa9;font-size:10px;font-weight:900}
+.debug-panel-body{padding:16px}
+.debug-panel header span,.debug-panel header strong{display:block}
+.debug-panel header span{font-size:8px;color:#79efa9;letter-spacing:2px}
+.debug-panel header strong{font-size:15px;margin-top:4px}
+.debug-status{display:flex;align-items:center;gap:10px;margin:14px 0;padding:10px;background:rgba(255,255,255,.045)}
+.debug-status>i{width:9px;height:9px;border-radius:50%;background:#6d7b79;box-shadow:0 0 0 4px rgba(255,255,255,.04)}
+.debug-status>i.active{background:#79efa9;box-shadow:0 0 12px #79efa9}
+.debug-status span,.debug-status small,.debug-status b{display:block}
+.debug-status small{font-size:8px;color:#82938f}.debug-status b{font-size:11px;margin-top:2px}
+.debug-panel button:not(.debug-toggle){width:100%;height:38px;border:1px solid rgba(255,255,255,.16);background:#142128;color:#eaf5f1;font-size:11px}
+.debug-panel .debug-primary{background:#79efa9!important;color:#071710!important;border-color:#79efa9!important;font-weight:900}
+.debug-switch{display:flex;align-items:center;justify-content:space-between;margin:10px 0;padding:10px;border:1px solid rgba(255,255,255,.1);cursor:pointer}
+.debug-switch span,.debug-switch b,.debug-switch small{display:block}.debug-switch b{font-size:11px}.debug-switch small{font-size:8px;color:#82938f;margin-top:3px}
+.debug-switch input{position:absolute;opacity:0}.debug-switch>i{width:34px;height:18px;border-radius:10px;background:#34423f;position:relative}.debug-switch>i:after{content:"";position:absolute;width:12px;height:12px;left:3px;top:3px;border-radius:50%;background:#aebbb8;transition:.18s}.debug-switch input:checked+i{background:#2d7656}.debug-switch input:checked+i:after{left:19px;background:#79efa9}
+.debug-readout{display:grid;grid-template-columns:1fr 1fr;gap:1px;margin:10px 0;background:rgba(255,255,255,.1)}.debug-readout span{padding:9px;background:#0b1519;font-size:8px;color:#82938f}.debug-readout b{display:block;color:#fff;font-size:11px;margin-top:3px}
+.game-ui.split-landscape .debug-panel{display:none}
+@media(max-width:700px){.debug-panel{top:145px;right:10px;width:238px}.debug-panel.collapsed{transform:translateX(248px)}}

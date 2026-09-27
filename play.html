@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="styles/garage.css">
   <link rel="stylesheet" href="styles/game-mobile.css">
   <link rel="stylesheet" href="styles/race-effects.css">
+  <link rel="stylesheet" href="styles/debug-panel.css">
 </head>
 <body>
   <canvas id="game" aria-label="Core Luge 游戏画面"></canvas>
@@ -21,6 +22,17 @@
     </header>
     <div class="energy" id="energy" hidden><span>核心能量</span><b id="energy-value">0</b><i id="shield-indicator">护盾</i></div>
     <button id="pause" class="icon-button" hidden aria-label="暂停" title="暂停">Ⅱ</button>
+    <aside id="debug-panel" class="debug-panel collapsed" aria-label="测试工具">
+      <button id="debug-toggle" class="debug-toggle" aria-expanded="false" title="测试工具">DEV</button>
+      <div class="debug-panel-body">
+        <header><span>QA TOOLS</span><strong>自动驾驶测试</strong></header>
+        <div class="debug-status"><i id="debug-status-light"></i><span><small>当前状态</small><b id="debug-status">等待启动</b></span></div>
+        <button id="debug-autoplay" class="debug-primary">一键自动跑完全程</button>
+        <label class="debug-switch"><span><b>自动驾驶</b><small>自动加速并避开障碍</small></span><input id="debug-autopilot" type="checkbox"><i></i></label>
+        <div class="debug-readout"><span>目标车道<b id="debug-lane">CENTER</b></span><span>前方风险<b id="debug-risk">0</b></span></div>
+        <button id="debug-new-track">重新生成并测试</button>
+      </div>
+    </aside>
 
     <section id="garage" class="screen garage-screen">
       <header class="garage-top"><div class="garage-brand"><i>CL</i><span><strong>CORE LUGE</strong><small>车手装备中心</small></span></div><div class="flow-steps"><b>01 选择赛车</b><span>02 赛事大厅</span><span>03 倒计时发车</span></div></header>
