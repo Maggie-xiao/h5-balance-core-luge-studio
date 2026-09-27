@@ -148,3 +148,20 @@ test('coins are collected independently from core energy', () => {
   assert.equal(state.energy, 0);
   assert.equal(state.event, '金币 ×1');
 });
+
+test('a missed collectible cannot mask an overlapping obstacle collision', () => {
+  const map = generateMap({ seed: 52 });
+  const segment = map.segments.find((item) => item.tag === 'straight' && item.id !== 'start');
+  map.features = [
+    { id: 'coin', type: 'coin', segmentId: segment.id, offset: 40, theta: -.8, width: .3, length: 5 },
+    { id: 'barrier', type: 'obstacle', segmentId: segment.id, offset: 40, theta: 0, width: .42, length: 5 },
+  ];
+  const start = map.segments.slice(0, map.segments.indexOf(segment)).reduce((sum, item) => sum + item.len, 0);
+  const state = { speed: 18, lateral: 0, distance: start + 40, elapsed: 0, penalties: 0, hit: new Set() };
+  simulateStep(state, { steer: 0, lean: 0 }, map, {}, .016);
+  assert.ok(state.penalties > 0);
+  assert.equal(state.impactType, 'obstacle');
+  assert.equal(state.event, '撞击失衡！');
+  assert.equal(state.hit.has('coin'), false);
+  assert.equal(state.hit.has('barrier'), true);
+});

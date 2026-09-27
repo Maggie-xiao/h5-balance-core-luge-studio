@@ -25,15 +25,16 @@ export function simulateStep(state, input, map, tuning, dt) {
   state.lateral += (steer * merged.steerGain - state.lateral * merged.balanceAssist) * dt;
   state.lateral = Math.max(-1.25, Math.min(1.25, state.lateral));
   state.distance += state.speed * dt;
-  const feature = map.features.find((item) => {
+  const hazardTypes = ['obstacle', 'tire-chicane', 'spinner', 'spikes', 'oil', 'moving-gate'];
+  const activeFeatures = map.features.filter((item) => {
     const segmentIndex = map.segments.findIndex((segment) => segment.id === item.segmentId);
     const start = map.segments.slice(0, segmentIndex).reduce((sum, segment) => sum + segment.len, 0) + item.offset;
     return state.distance >= start && state.distance < start + item.length && !state.hit.has(item.id);
-  });
-  if (feature) {
+  }).sort((a, b) => Number(hazardTypes.includes(a.type)) - Number(hazardTypes.includes(b.type)));
+  for (const feature of activeFeatures) {
     const touches = Math.abs(state.lateral - feature.theta) < feature.width / 2 + .12;
     const movingTheta = feature.type === 'moving-gate' ? Math.sin(state.elapsed * 2.4) * .62 : feature.type === 'spinner' ? Math.sin(state.elapsed * 2.8) * .72 : feature.theta;
-    const hitsHazard = ['obstacle', 'tire-chicane', 'spinner', 'spikes', 'oil', 'moving-gate'].includes(feature.type) && Math.abs(state.lateral - movingTheta) < feature.width;
+    const hitsHazard = hazardTypes.includes(feature.type) && Math.abs(state.lateral - movingTheta) < feature.width;
     if (touches || hitsHazard) state.hit.add(feature.id);
     if (touches && feature.type === 'boost') { state.boostTimer = 1.35; state.event = '路线加速'; }
     if (touches && feature.type === 'conveyor') { state.boostTimer = 2; state.speed = Math.min(merged.maxSpeed + 5, state.speed + 5); state.event = '磁力传送带'; }
