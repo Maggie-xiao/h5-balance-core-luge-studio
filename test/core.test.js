@@ -165,3 +165,16 @@ test('a missed collectible cannot mask an overlapping obstacle collision', () =>
   assert.equal(state.hit.has('coin'), false);
   assert.equal(state.hit.has('barrier'), true);
 });
+
+test('obstacle collision includes the visible width of the kart body', () => {
+  const map = generateMap({ seed: 63 });
+  const segment = map.segments.find((item) => item.tag === 'straight' && item.id !== 'start');
+  map.features = [{ id: 'wide-hit', type: 'obstacle', segmentId: segment.id, offset: 40, theta: 0, width: .42, length: 5 }];
+  const start = map.segments.slice(0, map.segments.indexOf(segment)).reduce((sum, item) => sum + item.len, 0);
+  const state = { speed: 20, lateral: .6, distance: start + 40, elapsed: 0, penalties: 0, hit: new Set() };
+  simulateStep(state, { steer: 0, lean: 0 }, map, {}, .016);
+  assert.ok(state.penalties > 0);
+  assert.ok(state.stunTimer > .5);
+  assert.ok(state.speed < 9);
+  assert.equal(state.impactFeatureId, 'wide-hit');
+});
