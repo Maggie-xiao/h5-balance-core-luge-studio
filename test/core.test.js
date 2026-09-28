@@ -5,7 +5,7 @@ import { autoTune, runQA } from '../src/core/qa.js';
 import { endlessManifest } from '../src/core/store.js';
 import { EndlessLoader } from '../src/runtime/endless-loader.js';
 import { simulateStep } from '../src/core/simulator.js';
-import { planAutopilot } from '../src/core/autopilot.js';
+import { applyAutopilotSafety, planAutopilot } from '../src/core/autopilot.js';
 
 test('generation is deterministic', () => assert.deepEqual(generateMap({ seed: 88 }), generateMap({ seed: 88 })));
 test('batch seeds and maps are unique', () => {
@@ -181,15 +181,16 @@ test('obstacle collision includes the visible width of the kart body', () => {
 });
 
 test('autopilot completes generated tracks while avoiding hazards', () => {
-  for (const seed of [4517, 77, 9001, 18421, 65537]) {
-    const map = generateMap({ seed, duration: 120, difficulty: .55, complexity: .72 });
+  for (const seed of Array.from({ length: 40 }, (_, index) => index + 1)) {
+    const map = generateMap({ seed, duration: 235, difficulty: .55, complexity: .72 });
     const finish = map.segments.reduce((sum, segment) => sum + segment.len, 0);
     const state = { speed: 4, lateral: 0, distance: 0, elapsed: 0, penalties: 0, hit: new Set() };
     let lane = 0;
-    while (state.distance < finish && state.elapsed < 240) {
+    while (state.distance < finish && state.elapsed < 400) {
       const plan = planAutopilot(state, map, lane);
       lane = plan.lane;
-      simulateStep(state, { steer: plan.steer, lean: plan.lean }, map, { baseSpeed: 7, maxSpeed: 42 }, .033);
+      applyAutopilotSafety(state, map);
+      simulateStep(state, { steer: plan.steer, lean: plan.lean }, map, { baseSpeed: 7, minSpeed: 0, maxSpeed: 47, steerGain: 3.8 }, .033);
     }
     assert.ok(state.distance >= finish, `seed ${seed} did not finish`);
     assert.equal(state.penalties, 0, `seed ${seed} hit a hazard`);

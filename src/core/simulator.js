@@ -1,4 +1,4 @@
-export const DEFAULT_TUNING = { baseSpeed: 21.5, maxSpeed: 40, acceleration: 8.5, brake: 11, steerGain: 1.4, balanceAssist: .32, hazardPenalty: 2.2, driftChargeRate: 1, driftBoost: 5.5 };
+export const DEFAULT_TUNING = { baseSpeed: 21.5, minSpeed: 5, maxSpeed: 40, acceleration: 8.5, brake: 11, steerGain: 1.4, balanceAssist: .32, hazardPenalty: 2.2, driftChargeRate: 1, driftBoost: 5.5 };
 
 function segmentAt(map, distance) {
   let start = 0;
@@ -20,7 +20,7 @@ export function simulateStep(state, input, map, tuning, dt) {
   else if (state.driftCharge > .35) { state.boostTimer = .8 + Math.min(1.2, state.driftCharge); state.event = '漂移加速'; state.driftCharge = 0; }
   else state.driftCharge = Math.max(0, state.driftCharge - dt * .8);
   state.boostTimer = Math.max(0, state.boostTimer - dt); state.shieldTimer = Math.max(0, state.shieldTimer - dt); state.jumpTimer = Math.max(0, state.jumpTimer - dt); state.impactTimer = Math.max(0, state.impactTimer - dt); state.bumpTimer = Math.max(0, state.bumpTimer - dt); state.stunTimer = Math.max(0, state.stunTimer - dt);
-  state.speed = Math.max(5, Math.min(merged.maxSpeed, state.speed + (lean > 0 ? merged.acceleration * lean : merged.brake * lean) * dt));
+  state.speed = Math.max(merged.minSpeed, Math.min(merged.maxSpeed, state.speed + (lean > 0 ? merged.acceleration * lean : merged.brake * lean) * dt));
   if (state.boostTimer > 0) state.speed = Math.min(merged.maxSpeed + 6, state.speed + merged.driftBoost * dt);
   state.lateral += (steer * merged.steerGain * (state.stunTimer > 0 ? .28 : 1) - state.lateral * merged.balanceAssist) * dt;
   state.lateral = Math.max(-1.25, Math.min(1.25, state.lateral));
